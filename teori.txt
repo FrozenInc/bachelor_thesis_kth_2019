@@ -14,3 +14,5 @@ NN3 ska få fram driver intend, alltså hur personen kör i precis den här ögo
 
 - Reward function för människan och roboten, de ska se till att stanna i lane, inte krasha i varandra och inte åka av vägen.
 - Belief function för människan. Den ska vara beroende av NN2 och NN3. Tetha tas fram härifrån.
+
+Vi använder ROS för simuleringar och sedan riktiga testen med de små bilarna. Detta tillsammans med Python.
