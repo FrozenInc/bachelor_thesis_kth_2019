@@ -18,7 +18,6 @@ class Car(object):
         self.linear.x0.set_value(x0)
         self.color = color # byter farg pa bilen
         self.default_u = np.zeros(self.dyn.nu) # gor en matris av storleken av kontroll variabeln med bara nollor for att ha ne referens
-        self.movable = True
     def reset(self): # resetar alla variabler till deras start varden som finns i __init__
         self.traj.x0.set_value(self.data0['x0']) 
         self.linear.x0.set_value(self.data0['x0'])
@@ -26,12 +25,9 @@ class Car(object):
             self.traj.u[t].set_value(np.zeros(self.dyn.nu))
             self.linear.u[t].set_value(self.default_u)
     def move(self): # flyttar fram bilen
-        if self.movable:
-            self.traj.tick()
-            self.linear.x0.set_value(self.traj.x0.get_value())
-        else:
-            self.traj.tick()
-            pass
+        pass
+        #self.traj.tick()
+        #self.linear.x0.set_value(self.traj.x0.get_value())
     @property # tar value av x0
     def x(self):
         return self.traj.x0.get_value()
@@ -40,42 +36,11 @@ class Car(object):
         return self.traj.u[0].get_value()
     @u.setter # satter en ny value for u[0]
     def u(self, value):
-        if self.movable:
-            self.traj.u[0].set_value(value)
-        else:
-            pass
+        pass
+        self.traj.u[0].set_value(value)
     def control(self, steer, gas): # gor literally ingenting
         pass
 
-class UserControlledCar(Car): # klassen for en bil som kan koras av en riktig person
-    # expanderar pa klassen Car
-    def __init__(self, *args, **vargs):
-        Car.__init__(self, *args, **vargs)
-        self.bounds = [(-1., 1.), (-1., 1.)]
-        self.follow = None
-        self.fixed_control = None
-        self._fixed_control = None
-    def fix_control(self, ctrl): # kan kora med ctrl, aka input fran user
-        self.fixed_control = ctrl
-        self._fixed_control = ctrl
-    def control(self, steer, gas): # tar in steer och gas fran user och anvander de for att kora
-        if self.fixed_control is not None:
-            self.u = self.fixed_control[0]
-            print self.fixed_control[0]
-            if len(self.fixed_control)>1:
-                self.fixed_control = self.fixed_control[1:]
-        elif self.follow is None:
-            self.u = [steer, gas]
-        else:
-            u = self.follow.u[0].get_value()
-            if u[1]>=1.:
-                u[1] = 1.
-            if u[1]<=-1.:
-                u[1] = -1.
-            self.u = u
-    def reset(self): # resetar bilen
-        Car.reset(self)
-        self.fixed_control = self._fixed_control
 
 class SimpleOptimizerCar(Car): # expanderar Car klassen
     def __init__(self, *args, **vargs):
@@ -98,10 +63,6 @@ class SimpleOptimizerCar(Car): # expanderar Car klassen
         self.optimizer = None # skapar en tom optimizer
     def control(self, steer, gas):
         print len(self.cache) # VIKTIGT: printar ut vilken tidsteg ar nu
-        if self.movable == False:
-            self.index += 1
-            return
-        
         if self.index<len(self.cache):
             self.u = self.cache[self.index]
         else:
@@ -120,34 +81,3 @@ class SimpleOptimizerCar(Car): # expanderar Car klassen
             self.sync(self.cache)
         # gar fram en tidsteg
         self.index += 1
-
-class NestedOptimizerCar(Car):
-    # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
-    def __init__(self, *args, **vargs):
-        Car.__init__(self, *args, **vargs)
-        self.bounds = [(-3., 3.), (-2., 2.)]
-    @property
-    def human(self):
-        return self._human
-    @human.setter
-    def human(self, value):
-        self._human = value
-        self.traj_h = Trajectory(self.T, self.human.dyn)
-    def move(self):
-        Car.move(self)
-        self.traj_h.tick()
-    @property
-    def rewards(self):
-        return self._rewards
-    @rewards.setter
-    def rewards(self, vals):
-        self._rewards = vals
-        self.optimizer = None
-    def control(self, steer, gas):
-        if self.optimizer is None:
-            reward_h, reward_r = self.rewards
-            reward_h = self.traj_h.reward(reward_h)
-            reward_r = self.traj.reward(reward_r)
-            self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
-        self.traj_h.x0.set_value(self.human.x)
-        self.optimizer.maximize(bounds = self.bounds)
