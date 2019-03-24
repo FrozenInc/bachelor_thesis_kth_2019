@@ -151,3 +151,71 @@ class NestedOptimizerCar(Car):
             self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
         self.traj_h.x0.set_value(self.human.x)
         self.optimizer.maximize(bounds = self.bounds)
+
+
+# TODO: Fix collision with object
+# TODO: Fix it to actuallly behave as a follower
+class NestedOptimizerCarFollower(Car):
+    # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
+    def __init__(self, *args, **vargs):
+        Car.__init__(self, *args, **vargs)
+        self.bounds = [(-3., 3.), (-2., 2.)]
+    @property
+    def leader(self):
+        return self._follower
+    @leader.setter
+    def leader(self, value):
+        self._follower = value
+        self.traj_h = Trajectory(self.T, self.follower.dyn)
+    def move(self):
+        Car.move(self)
+        self.traj_h.tick()
+    @property
+    def rewards(self):
+        return self._rewards
+    @rewards.setter
+    def rewards(self, vals):
+        self._rewards = vals
+        self.optimizer = None
+    def control(self, steer, gas):
+        if self.optimizer is None:
+            reward_h, reward_r = self.rewards
+            reward_h = self.traj_h.reward(reward_h)
+            reward_r = self.traj.reward(reward_r)
+            self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
+        self.traj_h.x0.set_value(self.leader.x)
+        self.optimizer.maximize(bounds = self.bounds)
+
+# TODO: Fix collision with object
+# TODO: Fix it to actuallly behave as a leader
+class NestedOptimizerCarLeader(Car):
+    # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
+    def __init__(self, *args, **vargs):
+        Car.__init__(self, *args, **vargs)
+        self.bounds = [(-3., 3.), (-2., 2.)]
+    @property
+    def follower(self):
+        return self._follower
+    @follower.setter
+    def follower(self, value):
+        self._follower = value
+        self.traj_h = Trajectory(self.T, self.follower.dyn)
+    def move(self):
+        Car.move(self)
+        self.traj_h.tick()
+    @property
+    def rewards(self):
+        return self._rewards
+    @rewards.setter
+    def rewards(self, vals):
+        self._rewards = vals
+        self.optimizer = None
+    def control(self, steer, gas):
+        if self.optimizer is None:
+            reward_h, reward_r = self.rewards
+            reward_h = self.traj_h.reward(reward_h)
+            reward_r = self.traj.reward(reward_r)
+            self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
+        self.traj_h.x0.set_value(self.follower.x)
+        self.optimizer.maximize(bounds = self.bounds)
+
