@@ -153,7 +153,7 @@ class NestedOptimizerCar(Car):
         self.optimizer.maximize(bounds = self.bounds)
 
 
-# TODO: Fix collision with object
+# DONE: Fix collision with object
 # TODO: Fix it to actuallly behave as a follower
 class NestedOptimizerCarFollower(Car):
     # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
@@ -204,7 +204,7 @@ class NestedOptimizerCarFollower(Car):
         self.traj_o.x0.set_value(self.obstacle.x)
         self.optimizer.maximize(bounds = self.bounds)
 
-# TODO: Fix collision with object
+# DONE: Fix collision with object
 # TODO: Fix it to actuallly behave as a leader
 class NestedOptimizerCarLeader(Car):
     # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 

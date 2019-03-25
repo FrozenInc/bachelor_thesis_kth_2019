@@ -70,12 +70,38 @@ def world_kex(know_model=True):
     world.lanes += [clane, clane.shifted(1), clane.shifted(-1)]
     world.roads += [clane]
     world.fences += [clane.shifted(2), clane.shifted(-2), clane.shifted(2.5), clane.shifted(-2.5)]
+
+    human_is_follower = True
+
+    # CAR 0 = Human
+    # CAR 1 = Robot
+    # CAR 2 = Obstacle
+
+    # depending on what our human is, follower or leader we create the cars differently
+    if human_is_follower:
+        # Create the cars-----
+        # Human Car
+        world.cars.append(car.NestedOptimizerCarFollower(dyn, [-0.13, 0., math.pi/2., 0.5], color='red'))
+        # Robot Car
+        world.cars.append(car.NestedOptimizerCarLeader(dyn, [0., 0., math.pi/2., 0.5], color='yellow'))
+        # --------------------
+    else:
+        # Create the cars-----
+        # Human Car
+        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, 0., math.pi/2., 0.5], color='red'))
+        # Robot Car
+        world.cars.append(car.NestedOptimizerCarFollower(dyn, [0., 0., math.pi/2., 0.5], color='yellow'))
+        # --------------------
+            
+
+
     # Create the cars-----
     # Human Car
-    world.cars.append(car.NestedOptimizerCar(dyn, [-0.13, 0., math.pi/2., 0.5], color='red'))
+    #world.cars.append(car.NestedOptimizerCar(dyn, [-0.13, 0., math.pi/2., 0.5], color='red'))
     # Robot Car
-    world.cars.append(car.NestedOptimizerCar(dyn, [0., 0., math.pi/2., 0.5], color='yellow'))
+    #world.cars.append(car.NestedOptimizerCar(dyn, [0., 0., math.pi/2., 0.5], color='yellow'))
     # --------------------
+    
     # Obstacle Car
     world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 0.5, math.pi/2., 0.5], color='blue'))
     # --------------------
@@ -96,6 +122,11 @@ def world_kex(know_model=True):
     world.cars[2].movable = False
     # ------------------------------------
 
+    # CAR 0 = Human
+    # CAR 1 = Robot
+    # CAR 2 = Obstacle
+
+    # TODO: fix this to cahnge depending on follower or leader
     # TODO: fix 2 new nestedoptimizer, leader and follower
     world.cars[0].robot = world.cars[1] # TODO: add a robot var in the nestedotpimzier car class and fix the control to take care of it
     world.cars[0].obstacle = world.cars[2] # TODO: add an obstacle var in the nestedoptimizer car class and fix the control
