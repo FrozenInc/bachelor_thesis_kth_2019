@@ -93,14 +93,6 @@ def world_kex(know_model=True):
         world.cars.append(car.NestedOptimizerCarFollower(dyn, [0., 0., math.pi/2., 0.5], color='yellow'))
         # --------------------
             
-
-
-    # Create the cars-----
-    # Human Car
-    #world.cars.append(car.NestedOptimizerCar(dyn, [-0.13, 0., math.pi/2., 0.5], color='red'))
-    # Robot Car
-    #world.cars.append(car.NestedOptimizerCar(dyn, [0., 0., math.pi/2., 0.5], color='yellow'))
-    # --------------------
     
     # Obstacle Car
     world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 0.5, math.pi/2., 0.5], color='blue'))
@@ -136,13 +128,6 @@ def world_kex(know_model=True):
         world.cars[0].obstacle = world.cars[2]
         world.cars[1].leader = world.cars[0]
         world.cars[1].obstacle = world.cars[2]
-
-    # TODO: fix this to cahnge depending on follower or leader
-    # TODO: fix 2 new nestedoptimizer, leader and follower
-    #world.cars[0].robot = world.cars[1] # TODO: add a robot var in the nestedotpimzier car class and fix the control to take care of it
-    #world.cars[0].obstacle = world.cars[2] # TODO: add an obstacle var in the nestedoptimizer car class and fix the control
-    #world.cars[1].human = world.cars[0] # Tells the robot who the human is
-    #world.cars[1].obstacle = world.cars[2]
 
     # calculates the dynamic(chaning) rewards for the cars depending on their speed and collision with other cars and obstacles
     # ROBOT
