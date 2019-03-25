@@ -126,12 +126,23 @@ def world_kex(know_model=True):
     # CAR 1 = Robot
     # CAR 2 = Obstacle
 
+    if human_is_follower:
+        world.cars[0].leader = world.cars[1]
+        world.cars[0].obstacle = world.cars[2]
+        world.cars[1].follower = world.cars[0]
+        world.cars[1].obstacle = world.cars[2]
+    else:
+        world.cars[0].follower = world.cars[1]
+        world.cars[0].obstacle = world.cars[2]
+        world.cars[1].leader = world.cars[0]
+        world.cars[1].obstacle = world.cars[2]
+
     # TODO: fix this to cahnge depending on follower or leader
     # TODO: fix 2 new nestedoptimizer, leader and follower
-    world.cars[0].robot = world.cars[1] # TODO: add a robot var in the nestedotpimzier car class and fix the control to take care of it
-    world.cars[0].obstacle = world.cars[2] # TODO: add an obstacle var in the nestedoptimizer car class and fix the control
-    world.cars[1].human = world.cars[0] # Tells the robot who the human is
-    world.cars[1].obstacle = world.cars[2]
+    #world.cars[0].robot = world.cars[1] # TODO: add a robot var in the nestedotpimzier car class and fix the control to take care of it
+    #world.cars[0].obstacle = world.cars[2] # TODO: add an obstacle var in the nestedoptimizer car class and fix the control
+    #world.cars[1].human = world.cars[0] # Tells the robot who the human is
+    #world.cars[1].obstacle = world.cars[2]
 
     # calculates the dynamic(chaning) rewards for the cars depending on their speed and collision with other cars and obstacles
     # ROBOT
