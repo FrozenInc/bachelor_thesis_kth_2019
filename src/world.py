@@ -83,7 +83,7 @@ def world_kex(know_model=True):
         # Human Car
         world.cars.append(car.NestedOptimizerCarFollower(dyn, [-0.13, 0., math.pi/2., 0.5], color='red'))
         # Robot Car
-        world.cars.append(car.NestedOptimizerCarLeader(dyn, [0., 0., math.pi/2., 0.5], color='yellow'))
+        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0., 0., math.pi/2., 0.5], color='yellow'))
         # --------------------
     else:
         # Create the cars-----
@@ -129,12 +129,16 @@ def world_kex(know_model=True):
         world.cars[1].leader = world.cars[0]
         world.cars[1].obstacle = world.cars[2]
 
+    # TODO: Fix this part, unsure how to make the world.simplereward
     # calculates the dynamic(chaning) rewards for the cars depending on their speed and collision with other cars and obstacles
     # ROBOT
     r_h = world.simple_reward([world.cars[1].traj], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)+100.*feature.bounded_control(world.cars[2].bounds) # Reward for the human
 
     # HUMAN
-    r_r = 10*goal+world.simple_reward([world.cars[1].traj_h], speed=0.5)+100.*feature.bounded_control(world.cars[2].bounds) # Reward for the robot
+    r_r = world.simple_reward([world.cars[1].traj_h], speed=0.5)+100.*feature.bounded_control(world.cars[2].bounds) # Reward for the robot
+    
+    # TODO: fix this too, world.cars[1].rewards = (r_h, r_r) is correct, need to fix it also for cars[0]
+    world.cars[0].rewards = (r_r, r_h)
     world.cars[1].rewards = (r_h, r_r) # Tells the robot what cars to take care of
     # ------------------------------------
 

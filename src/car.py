@@ -178,7 +178,7 @@ class NestedOptimizerCarFollower(Car):
     @leader.setter
     def leader(self, value):
         self._leader = value
-        self.traj_h = Trajectory(self.T, self.follower.dyn)
+        self.traj_h = Trajectory(self.T, self.leader.dyn)
     #----------------
 
     # Move and update traj for leader and obstacle---
@@ -200,6 +200,7 @@ class NestedOptimizerCarFollower(Car):
             reward_h = self.traj_h.reward(reward_h)
             reward_r = self.traj.reward(reward_r)
             self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
+            # TODO: fixa optimizer to care about obstacles too
         self.traj_h.x0.set_value(self.leader.x)
         self.traj_o.x0.set_value(self.obstacle.x)
         self.optimizer.maximize(bounds = self.bounds)
@@ -252,6 +253,7 @@ class NestedOptimizerCarLeader(Car):
             reward_h = self.traj_h.reward(reward_h)
             reward_r = self.traj.reward(reward_r)
             self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
+            # TODO: fixa optimizer to care about obstacles too
         self.traj_h.x0.set_value(self.follower.x)
         self.traj_o.x0.set_value(self.obstacle.x)
         self.optimizer.maximize(bounds = self.bounds)
