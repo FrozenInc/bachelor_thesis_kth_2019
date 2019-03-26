@@ -150,7 +150,7 @@ def world_kex(know_model=True):
         # ROBOT
         r_r = world.simple_reward([world.cars[1].traj_h], speed=0.5) # Reward for the robot
      
-    r_o = 100000.*feature.bounded_control(world.cars[2].bounds)
+    r_o = 100.*feature.bounded_control(world.cars[2].bounds)
 
     # TODO: fix this too, world.cars[1].rewards = (r_h, r_r) is correct, need to fix it also for cars[0]
     #world.cars[0].rewards = (r_r, r_h)

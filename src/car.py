@@ -198,9 +198,6 @@ class NestedOptimizerCarFollower(Car):
     def control(self, steer, gas):
         if self.optimizer is None:
             reward_h, reward_r, reward_o = self.rewards
-            print(reward_h)
-            print(reward_o)
-            exit()
             reward_h = self.traj_h.reward(reward_h)
             reward_r = self.traj.reward(reward_r)
             reward_o = self.traj_o.reward(reward_o)
