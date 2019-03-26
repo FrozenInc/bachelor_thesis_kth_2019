@@ -129,17 +129,34 @@ def world_kex(know_model=True):
         world.cars[1].leader = world.cars[0]
         world.cars[1].obstacle = world.cars[2]
 
+    @feature.feature
+    def goal(t, x, u):
+        return -(10.*(x[0])**2+0.5*(x[1]-2.)**2)
+        #return  ((x[1] + 0.13)**2)/(0.13)**2 +((x[0]-0.5)**2)/(0.13)**2 
+
     # TODO: Fix this part, unsure how to make the world.simplereward
     # calculates the dynamic(chaning) rewards for the cars depending on their speed and collision with other cars and obstacles
-    # ROBOT
-    r_h = world.simple_reward([world.cars[1].traj], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)+100.*feature.bounded_control(world.cars[2].bounds) # Reward for the human
+    if human_is_follower:
+        # HUMAN
+        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.6)# Reward for the human
 
-    # HUMAN
-    r_r = world.simple_reward([world.cars[1].traj_h], speed=0.5)+100.*feature.bounded_control(world.cars[2].bounds) # Reward for the robot
-    
+        # ROBOT
+        r_r = world.simple_reward([world.cars[0].traj], speed=0.5)+100.*feature.bounded_control(world.cars[1].bounds)# Reward for the robot
+
+    else:
+        # HUMAN
+        r_h = world.simple_reward([world.cars[1].traj], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds) # Reward for the human
+
+        # ROBOT
+        r_r = world.simple_reward([world.cars[1].traj_h], speed=0.5) # Reward for the robot
+     
+    r_o = 100000.*feature.bounded_control(world.cars[2].bounds)
+
     # TODO: fix this too, world.cars[1].rewards = (r_h, r_r) is correct, need to fix it also for cars[0]
-    world.cars[0].rewards = (r_r, r_h)
-    world.cars[1].rewards = (r_h, r_r) # Tells the robot what cars to take care of
+    #world.cars[0].rewards = (r_r, r_h)
+    #world.cars[1].rewards = (r_h, r_r) # Tells the robot what cars to take care of
+    world.cars[0].rewards = (r_r, r_h, r_o)
+    world.cars[1].rewards = (r_h, r_r, r_o)
     # ------------------------------------
 
     return world

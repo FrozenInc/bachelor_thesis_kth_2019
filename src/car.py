@@ -30,7 +30,8 @@ class Car(object):
             self.traj.tick()
             self.linear.x0.set_value(self.traj.x0.get_value())
         else:
-            self.traj.tick()
+            self.traj.tick()            
+            self.linear.x0.set_value(self.traj.x0.get_value())
             pass
     @property # tar value av x0
     def x(self):
@@ -196,10 +197,18 @@ class NestedOptimizerCarFollower(Car):
         self.optimizer = None
     def control(self, steer, gas):
         if self.optimizer is None:
-            reward_h, reward_r = self.rewards
+            reward_h, reward_r, reward_o = self.rewards
+            print(reward_h)
+            print(reward_o)
+            exit()
             reward_h = self.traj_h.reward(reward_h)
             reward_r = self.traj.reward(reward_r)
+            reward_o = self.traj_o.reward(reward_o)
+            # TEST:
+            reward_h = reward_h + reward_o
+
             self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
+            
             # TODO: fixa optimizer to care about obstacles too
         self.traj_h.x0.set_value(self.leader.x)
         self.traj_o.x0.set_value(self.obstacle.x)
@@ -249,9 +258,14 @@ class NestedOptimizerCarLeader(Car):
         self.optimizer = None
     def control(self, steer, gas):
         if self.optimizer is None:
-            reward_h, reward_r = self.rewards
+            reward_h, reward_r, reward_o = self.rewards
             reward_h = self.traj_h.reward(reward_h)
             reward_r = self.traj.reward(reward_r)
+            reward_o = self.traj_o.reward(reward_o)
+            # TEST:
+            reward_h = reward_h + reward_o
+        
+
             self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
             # TODO: fixa optimizer to care about obstacles too
         self.traj_h.x0.set_value(self.follower.x)

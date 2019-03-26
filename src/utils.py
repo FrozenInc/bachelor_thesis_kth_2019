@@ -36,6 +36,8 @@ def hessian(f, x, constants=[]):
 
 class NestedMaximizer(object):
     # kors bara for nested optimizer i car.py, hoppa over sa lange. 
+    # f1, vs1 are other car
+    # f2, vs2 are own car
     def __init__(self, f1, vs1, f2, vs2):
         self.f1 = f1
         self.f2 = f2
