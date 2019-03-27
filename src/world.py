@@ -136,19 +136,18 @@ def world_kex(know_model=True):
 
     # TODO: Fix this part, unsure how to make the world.simplereward
     # calculates the dynamic(chaning) rewards for the cars depending on their speed and collision with other cars and obstacles
-    if human_is_follower:
-        # HUMAN
-        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.6)# Reward for the human
-
-        # ROBOT
-        r_r = world.simple_reward([world.cars[0].traj], speed=0.5)+100.*feature.bounded_control(world.cars[1].bounds)# Reward for the robot
-
-    else:
+    if human_is_follower:        
         # HUMAN
         r_h = world.simple_reward([world.cars[1].traj], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds) # Reward for the human
 
         # ROBOT
-        r_r = world.simple_reward([world.cars[1].traj_h], speed=0.5) # Reward for the robot
+        r_r = world.simple_reward([world.cars[1].traj_h], speed=0.5)+100.*feature.bounded_control(world.cars[1].bounds) # Reward for the robot
+    else:
+        # HUMAN
+        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)# Reward for the human
+
+        # ROBOT
+        r_r = world.simple_reward([world.cars[0].traj], speed=0.5)+100.*feature.bounded_control(world.cars[1].bounds)# Reward for the robot
      
     r_o = 100.*feature.bounded_control(world.cars[2].bounds)
 
