@@ -85,6 +85,7 @@ class SimpleOptimizerCar(Car): # expanderar Car klassen
         self.cache = [] # minns var den har varit forut
         self.index = 0 # minns pa vilken plats den ar
         self.sync = lambda cache: None # lamba kopierar i detta fall cache och satter den lika med None
+        #self.r_temp = 0
     def reset(self): # resetar bilen 
         Car.reset(self)
         self.index = 0
@@ -101,6 +102,10 @@ class SimpleOptimizerCar(Car): # expanderar Car klassen
         print len(self.cache) # VIKTIGT: printar ut vilken tidsteg ar nu
         if self.movable == False:
             self.index += 1
+
+            # just to test, but the simple optimizer seem to be able to find the other cars and get a reward depending on that
+            #print self.traj.reward(self.reward).eval()
+            #IMPORTANT
             return
         
         if self.index<len(self.cache):
@@ -170,6 +175,7 @@ class NestedOptimizerCarFollower(Car):
     def obstacle(self, value):
         self._obstacle = value
         self.traj_o = Trajectory(self.T, self.obstacle.dyn)
+        self.r_temp = 0
     # -------------
 
     # Leader --------
@@ -197,12 +203,20 @@ class NestedOptimizerCarFollower(Car):
         self.optimizer = None
     def control(self, steer, gas):
         if self.optimizer is None:
+        #if True:
             reward_h, reward_r, reward_o = self.rewards
+            self.t_temp = reward_o
+            #reward_h = reward_h + reward_o
+            
+
             reward_h = self.traj_h.reward(reward_h)
             reward_r = self.traj.reward(reward_r)
             reward_o = self.traj_o.reward(reward_o)
+            #print reward_h.eval()
+            #print reward_o.eval()
+            #exit()
             # TEST:
-            reward_h = reward_h + reward_o
+            #reward_h = reward_h + reward_o
 
             self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
             
@@ -210,6 +224,8 @@ class NestedOptimizerCarFollower(Car):
         self.traj_h.x0.set_value(self.leader.x)
         self.traj_o.x0.set_value(self.obstacle.x)
         self.optimizer.maximize(bounds = self.bounds)
+        #print self.obstacle.x
+        print self.traj_o.reward(self.t_temp).eval()
 
 # DONE: Fix collision with object
 # TODO: Fix it to actuallly behave as a leader
@@ -256,11 +272,13 @@ class NestedOptimizerCarLeader(Car):
     def control(self, steer, gas):
         if self.optimizer is None:
             reward_h, reward_r, reward_o = self.rewards
+            reward_h = reward_h + reward_o
+
             reward_h = self.traj_h.reward(reward_h)
             reward_r = self.traj.reward(reward_r)
             reward_o = self.traj_o.reward(reward_o)
             # TEST:
-            reward_h = reward_h + reward_o
+            #reward_h = reward_h + reward_o
         
 
             self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
