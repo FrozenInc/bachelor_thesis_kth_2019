@@ -1,0 +1,18 @@
+- Vi måste ha en värld med 1-3 st fält med minnst 1 robot och 1 person.
+- Vi kör Neural Network för att roboten ska testa personens körstil/körbeteende.
+- Vi måste antigen få riktigt data från Elis eller så måste vi generera flera tusen olika personer för att tränna upp nätverket.
+- NN1 In: Koordinater, Hastighet, Accelerationen, och Vinkel av personen som kör.
+- NN1 Ut: Koordinater, Hastighet, Accelerationen, och Vinkel av roboten som kör. (Möjligtvis kan göras av en PID system för enklare skull)
+- NN2 In: Osäker, kanske personen och bilens Koordinater, Hastighet, Accelerationen, Vinkel.
+- NN2 Ut: Agressivitet/Defensivitet, Attentive/Distracted av personen som kör.
+- NN3 In: Osäker, kanske personen och bilens Koordinater, Hastighet, Accelerationen, Vinkel.
+- NN3 Ut: Agressivitet/Defensivitet, Attentive/Distracted av personen som kör.
+
+NN1 kör bilen.
+NN2 ska få fram driver style, den är en mer permanent stil av hur personen kör, vi tar en längre period för att ta fram datan.
+NN3 ska få fram driver intend, alltså hur personen kör i precis den här ögonblicket, vi tar en kortare tid för att ta fram datan.
+
+- Reward function för människan och roboten, de ska se till att stanna i lane, inte krasha i varandra och inte åka av vägen.
+- Belief function för människan. Den ska vara beroende av NN2 och NN3. Tetha tas fram härifrån.
+
+Vi använder ROS för simuleringar och sedan riktiga testen med de små bilarna. Detta tillsammans med Python.
