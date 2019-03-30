@@ -51,7 +51,8 @@ class World(object):
         for lane in lanes:
             r = r+theta[0]*lane.gaussian()
         for fence in fences:
-            r = r+theta[1]*fence.gaussian()
+            # increase the negative reward for the fences so that the cars dont go outside of the road
+            r = r+theta[1]*fence.gaussian()*1000
         for road in roads:
             r = r+theta[2]*road.gaussian(10.)
         if speed is not None:
@@ -66,10 +67,15 @@ class World(object):
 def world_kex(know_model=True):
     dyn = dynamics.CarDynamics(0.1)
     world = World()
+    # clane = lane.StraightLane([0., -1.], [0., 1.], 0.13)
+    # world.lanes += [clane, clane.shifted(1), clane.shifted(-1)]
+    # world.roads += [clane]
+    # world.fences += [clane.shifted(2), clane.shifted(-2), clane.shifted(2.5), clane.shifted(-2.5)]
+
     clane = lane.StraightLane([0., -1.], [0., 1.], 0.13)
-    world.lanes += [clane, clane.shifted(1), clane.shifted(-1)]
+    world.lanes += [clane, clane.shifted(1)]
     world.roads += [clane]
-    world.fences += [clane.shifted(2), clane.shifted(-2), clane.shifted(2.5), clane.shifted(-2.5)]
+    world.fences += [clane.shifted(2), clane.shifted(-2), clane.shifted(2.5)]
 
     human_is_follower = True
 
@@ -141,16 +147,18 @@ def world_kex(know_model=True):
 
     # TODO: Fix this part, unsure how to make the world.simplereward
     # calculates the dynamic(chaning) rewards for the cars depending on their speed and collision with other cars and obstacles
+
+    # TODO: cars dont want to slow down, find a solution that works
     if human_is_follower:        
         # HUMAN
         #r_h = world.simple_reward([world.cars[1].traj], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)+world.simple_reward(world.cars[0].traj_o, speed=0.) # Reward for the human
-        r_h = world.simple_reward([world.cars[1].traj], speed=0.6)+1*world.simple_reward(world.cars[0].traj_o, speed=0.9) # Reward for the human
+        r_h = world.simple_reward([world.cars[1].traj], speed=0.8)+2*world.simple_reward(world.cars[0].traj_o, speed=0.8) # Reward for the human
 
         # ROBOT
-        r_r = world.simple_reward([world.cars[1].traj_h], speed=0.5)+100.*feature.bounded_control(world.cars[1].bounds) # Reward for the robot
+        r_r = world.simple_reward([world.cars[1].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds) # Reward for the robot
     else:
         # HUMAN
-        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)# Reward for the human
+        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)+1*world.simple_reward(world.cars[0].traj_o, speed=0.9)# Reward for the human
 
         # ROBOT
         r_r = world.simple_reward([world.cars[0].traj], speed=0.5)+100.*feature.bounded_control(world.cars[1].bounds)# Reward for the robot

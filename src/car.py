@@ -225,7 +225,7 @@ class NestedOptimizerCarFollower(Car):
         self.traj_o.x0.set_value(self.obstacle.x)
         self.optimizer.maximize(bounds = self.bounds)
         #print self.obstacle.x
-        print self.traj_o.reward(self.t_temp).eval()
+        #print self.traj_o.reward(self.t_temp).eval()
 
 # DONE: Fix collision with object
 # TODO: Fix it to actuallly behave as a leader
