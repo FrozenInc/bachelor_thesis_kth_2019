@@ -155,7 +155,7 @@ def world_kex(know_model=True):
         r_h = world.simple_reward([world.cars[1].traj], speed=0.8)+2*world.simple_reward(world.cars[0].traj_o, speed=0.8) # Reward for the human
 
         # ROBOT
-        r_r = world.simple_reward([world.cars[1].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds) # Reward for the robot
+        r_r = 0.5*world.simple_reward([world.cars[1].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds) # Reward for the robot
     else:
         # HUMAN
         r_h = world.simple_reward([world.cars[0].traj_h], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)+1*world.simple_reward(world.cars[0].traj_o, speed=0.9)# Reward for the human
