@@ -52,7 +52,7 @@ class World(object):
             r = r+theta[0]*lane.gaussian()
         for fence in fences:
             # increase the negative reward for the fences so that the cars dont go outside of the road
-            r = r+theta[1]*fence.gaussian()*1000
+            r = r+theta[1]*fence.gaussian()*1000000
         for road in roads:
             r = r+theta[2]*road.gaussian(10.)
         if speed is not None:
@@ -155,13 +155,13 @@ def world_kex(know_model=True):
         r_h = world.simple_reward([world.cars[1].traj], speed=0.8)+2*world.simple_reward(world.cars[0].traj_o, speed=0.8) # Reward for the human
 
         # ROBOT
-        r_r = 0.5*world.simple_reward([world.cars[1].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds) # Reward for the robot
+        r_r = 0.5*world.simple_reward([world.cars[1].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds)+1*world.simple_reward(world.cars[0].traj_o, speed=0.8) # Reward for the robot
     else:
         # HUMAN
-        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)+1*world.simple_reward(world.cars[0].traj_o, speed=0.9)# Reward for the human
+        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[0].bounds)+2*world.simple_reward(world.cars[0].traj_o, speed=0.8)# Reward for the human
 
         # ROBOT
-        r_r = world.simple_reward([world.cars[0].traj], speed=0.5)+100.*feature.bounded_control(world.cars[1].bounds)# Reward for the robot
+        r_r = world.simple_reward([world.cars[0].traj], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds)+1*world.simple_reward(world.cars[0].traj_o, speed=0.8)# Reward for the robot
      
     r_o = 1.*feature.bounded_control(world.cars[2].bounds)
     #r_o = world.simple_reward([world.cars[0].traj_o], speed=0.)
