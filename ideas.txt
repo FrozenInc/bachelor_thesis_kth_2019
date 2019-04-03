@@ -6,3 +6,4 @@ what to do:
 - zero friction
 - try with other speed for the cars and/or different starting locations, maybe get a better results?
 - find why the red car doesnt respond faster to the obstacle
+- add the trajectory that the cars are planning in the simulation
