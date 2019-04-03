@@ -1,0 +1,8 @@
+make it so that the leader optimizes first and then sends the optimized trajectory to the follower, who will optimize over just the current leader trajectory
+
+
+what to do:
+- optimize the dynamics, from elis kod and whiteboard
+- zero friction
+- try with other speed for the cars and/or different starting locations, maybe get a better results?
+- find why the red car doesnt respond faster to the obstacle
