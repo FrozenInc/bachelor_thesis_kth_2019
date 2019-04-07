@@ -52,9 +52,13 @@ class World(object):
             r = r+theta[0]*lane.gaussian()
         for fence in fences:
             # increase the negative reward for the fences so that the cars dont go outside of the road
-            r = r+theta[1]*fence.gaussian()*1000
-        for road in roads:
-            r = r+theta[2]*road.gaussian(10.)
+            #r = r+theta[1]*fence.gaussian()*1000000
+            r = r+theta[1]*fence.gaussian()
+        if roads == None:
+            pass
+        else:
+            for road in roads:
+                r = r+theta[2]*road.gaussian(10.)
         if speed is not None:
             r = r+speed_import*theta[3]*feature.speed(speed)
         try:#quick fix, if there is just 1 car it will not be a list
@@ -66,6 +70,8 @@ class World(object):
 
 def world_kex(know_model=True):
     dyn = dynamics.CarDynamics(0.1)
+    dyn.dt = 1.0
+    dyn.fiction = 0.0
     world = World()
     # clane = lane.StraightLane([0., -1.], [0., 1.], 0.13)
     # world.lanes += [clane, clane.shifted(1), clane.shifted(-1)]
@@ -74,10 +80,10 @@ def world_kex(know_model=True):
 
     clane = lane.StraightLane([0., -1.], [0., 1.], 0.13)
     world.lanes += [clane, clane.shifted(1)]
-    world.roads += [clane]
-    world.fences += [clane.shifted(2), clane.shifted(-2), clane.shifted(2.5)]
+    #world.roads += [clane, clane.shifted(1)]
+    world.fences += [clane.shifted(2), clane.shifted(-1)]
 
-    human_is_follower = True
+    human_is_follower = False
 
     # CAR 0 = Human
     # CAR 1 = Robot
@@ -87,14 +93,14 @@ def world_kex(know_model=True):
     if human_is_follower:
         # Create the cars-----
         # Human Car
-        world.cars.append(car.NestedOptimizerCarFollower(dyn, [-0.13, 0., math.pi/2., 0.5], color='red'))
+        world.cars.append(car.NestedOptimizerCarFollower(dyn, [-0.13, 0.04, math.pi/2., 0.5], color='red'))
         # Robot Car
         world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0., 0., math.pi/2., 0.5], color='yellow'))
         # --------------------
     else:
         # Create the cars-----
         # Human Car
-        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, 0., math.pi/2., 0.5], color='red'))
+        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, 0.04, math.pi/2., 0.5], color='red'))
         # Robot Car
         world.cars.append(car.NestedOptimizerCarFollower(dyn, [0., 0., math.pi/2., 0.5], color='yellow'))
         # --------------------
@@ -102,16 +108,17 @@ def world_kex(know_model=True):
     
     # Obstacle Car
     #world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 0.5, math.pi/2., 0.5], color='blue'))
-    world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 0.5, math.pi/4., 0.], color='blue'))
+    world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 1, math.pi/4., 0.], color='blue'))
     # --------------------
-
+    
     # Reward and default for the Human ---
-    world.cars[0].reward = world.simple_reward(world.cars[0], speed=0.6)
+    # speed did not change here
+    # world.cars[0].reward = world.simple_reward(world.cars[0], speed=0.6)
     world.cars[0].default_u = np.asarray([0., 1.])
     # ------------------------------------
 
     # Reward and default for the Robot ---
-    world.cars[1].reward = world.simple_reward(world.cars[1], speed=0.6)
+    # world.cars[1].reward = world.simple_reward(world.cars[1], speed=0.6)
     world.cars[1].default_u = np.asarray([0., 1.])
     # ------------------------------------
 
@@ -152,16 +159,17 @@ def world_kex(know_model=True):
     if human_is_follower:        
         # HUMAN
         #r_h = world.simple_reward([world.cars[1].traj], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)+world.simple_reward(world.cars[0].traj_o, speed=0.) # Reward for the human
-        r_h = world.simple_reward([world.cars[1].traj], speed=0.8)+2*world.simple_reward(world.cars[0].traj_o, speed=0.8) # Reward for the human
+        r_h = world.simple_reward([world.cars[1].traj], speed=0.80)+2*world.simple_reward(world.cars[0].traj_o, speed=0.80) # Reward for the human
 
         # ROBOT
-        r_r = 0.5*world.simple_reward([world.cars[1].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds) # Reward for the robot
+        
+        r_r = 0.5*world.simple_reward([world.cars[1].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds)+1*world.simple_reward(world.cars[1].traj_o, speed=0.8) # Reward for the robot
     else:
         # HUMAN
-        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.6)+100.*feature.bounded_control(world.cars[0].bounds)+1*world.simple_reward(world.cars[0].traj_o, speed=0.9)# Reward for the human
+        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[0].bounds)+5*world.simple_reward(world.cars[0].traj_o, speed=0.8)# Reward for the human
 
         # ROBOT
-        r_r = world.simple_reward([world.cars[0].traj], speed=0.5)+100.*feature.bounded_control(world.cars[1].bounds)# Reward for the robot
+        r_r = world.simple_reward([world.cars[0].traj], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds)+5*world.simple_reward(world.cars[1].traj_o, speed=0.7)# Reward for the robot
      
     r_o = 1.*feature.bounded_control(world.cars[2].bounds)
     #r_o = world.simple_reward([world.cars[0].traj_o], speed=0.)

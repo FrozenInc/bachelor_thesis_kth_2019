@@ -39,29 +39,33 @@ class NestedMaximizer(object):
     # f1, vs1 are other car
     # f2, vs2 are own car
     def __init__(self, f1, vs1, f2, vs2):
+        # creates a isolated var of the vars
         self.f1 = f1
         self.f2 = f2
         self.vs1 = vs1
         self.vs2 = vs2
-        self.sz1 = [shape(v)[0] for v in self.vs1]
+        #-----
+
+        # 
+        self.sz1 = [shape(v)[0] for v in self.vs1] # converts from tensor variable to normal array (uses also some math magic)
         self.sz2 = [shape(v)[0] for v in self.vs2]
-        for i in range(1, len(self.sz1)):
+        for i in range(1, len(self.sz1)): # adds together all future sz1 with old sz1
             self.sz1[i] += self.sz1[i-1]
-        self.sz1 = [(0 if i==0 else self.sz1[i-1], self.sz1[i]) for i in range(len(self.sz1))]
-        for i in range(1, len(self.sz2)):
+        self.sz1 = [(0 if i==0 else self.sz1[i-1], self.sz1[i]) for i in range(len(self.sz1))] #makes the array into a 2d-array with (prevoius var, var)
+        for i in range(1, len(self.sz2)): # same thing az sz1
             self.sz2[i] += self.sz2[i-1]
-        self.sz2 = [(0 if i==0 else self.sz2[i-1], self.sz2[i]) for i in range(len(self.sz2))]
-        self.df1 = grad(self.f1, vs1)
-        self.new_vs1 = [tt.vector() for v in self.vs1]
-        self.func1 = th.function(self.new_vs1, [-self.f1, -self.df1], givens=zip(self.vs1, self.new_vs1))
+        self.sz2 = [(0 if i==0 else self.sz2[i-1], self.sz2[i]) for i in range(len(self.sz2))] # samme thing as sz1
+        self.df1 = grad(self.f1, vs1) # IMPORTANT: VERY SLOW
+        self.new_vs1 = [tt.vector() for v in self.vs1] # back from normal array to tensorVector
+        self.func1 = th.function(self.new_vs1, [-self.f1, -self.df1], givens=zip(self.vs1, self.new_vs1)) # IMPORTANT: VERY VERY VERY SLOW
         def f1_and_df1(x0):
             return self.func1(*[x0[a:b] for a, b in self.sz1])
         self.f1_and_df1 = f1_and_df1
-        J = jacobian(grad(f1, vs2), vs1)
-        H = hessian(f1, vs1)
-        g = grad(f2, vs1)
-        self.df2 = -tt.dot(J, ts.solve(H, g))+grad(f2, vs2)
-        self.func2 = th.function([], [-self.f2, -self.df2])
+        J = jacobian(grad(f1, vs2), vs1) # IMPORTANT: VERY VERY VERY VERY SLOW
+        H = hessian(f1, vs1) # IMPORTANT: VERY VERY VERY VERY SLOW
+        g = grad(f2, vs1 )# IMPORTANT: SLOW
+        self.df2 = -tt.dot(J, ts.solve(H, g))+grad(f2, vs2) # IMPORTANT: SLOW
+        self.func2 = th.function([], [-self.f2, -self.df2]) # IMPORTANT: EXREMELY SLOW
         def f2_and_df2(x0):
             for v, (a, b) in zip(self.vs2, self.sz2):
                 v.set_value(x0[a:b])
