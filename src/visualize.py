@@ -51,10 +51,17 @@ class Visualizer(object):
         self.cm = matplotlib.cm.jet
         self.paused = False
         self.label = pyglet.text.Label(
-            'Speed: ',
+            'Speed human: ',
             font_name='Times New Roman',
             font_size=24,
             x=30, y=self.window.height-30,
+            anchor_x='left', anchor_y='top'
+        )
+        self.label2 = pyglet.text.Label(
+            'Speed robot: ',
+            font_name='Times New Roman',
+            font_size=24,
+            x=30, y=self.window.height-60,
             anchor_x='left', anchor_y='top'
         )
         # centrerar cemeran over 1 bil
@@ -286,8 +293,10 @@ class Visualizer(object):
                 self.draw_car(self.anim_x[car], car.color)
         gl.glPopMatrix()
         if isinstance(self.main_car, Car):
-            self.label.text = 'Speed: %.2f'%self.anim_x[self.main_car][3]
+            self.label.text = 'Speed human: %.2f'%self.anim_x[self.main_car][3]
+            self.label2.text = 'Speed robot: %.2f'%self.anim_x[self.cars[1]][3]
             self.label.draw()
+            self.label2.draw()
         if self.output is not None:
             pyglet.image.get_buffer_manager().get_color_buffer().save(self.output.format(self.frame))
 
