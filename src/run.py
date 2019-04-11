@@ -43,7 +43,7 @@ if __name__ == '__main__1':
             if isinstance(car, UserControlledCar):
                 print 'User Car'
                 car.fix_control(ctrl)
-    vis = visualize.Visualizer(0.1, name=name)
+    vis = visualize.Visualizer(0.5, name=name)
     vis.use_world(world)
     vis.main_car = world.cars[0]
     vis.run()

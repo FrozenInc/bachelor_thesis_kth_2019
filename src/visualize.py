@@ -232,7 +232,7 @@ class Visualizer(object):
         alpha = min((t-self.prev_t)/self.dt, 1.)
         for car in self.cars:
             self.anim_x[car] = (1-alpha)*self.prev_x[car]+alpha*car.x
-
+            
     # ritar ut hur lanes ska se ut
     def draw_lane_surface(self, lane):
         gl.glColor3f(0.4, 0.4, 0.4)
@@ -291,6 +291,13 @@ class Visualizer(object):
         for car in self.cars:
             if car==self.main_car or car in self.visible_cars:
                 self.draw_car(self.anim_x[car], car.color)
+                for temp in range(len(car.traj.x)):
+                    point = car.traj.x[temp].eval()
+                    #print self.anim_x[car]
+                    #print point
+                    #exit()
+                    self.draw_car(point, car.color)
+
         gl.glPopMatrix()
         if isinstance(self.main_car, Car):
             self.label.text = 'Speed human: %.2f'%self.anim_x[self.main_car][3]
@@ -320,7 +327,7 @@ class Visualizer(object):
             with open(filename) as f:
                 self.feed_u, self.feed_x = pickle.load(f)
         if self.output is None:
-            pyglet.clock.schedule_interval(self.animation_loop, 0.02)
+            pyglet.clock.schedule_interval(self.animation_loop, self.dt) # was 0.02
             pyglet.clock.schedule_interval(self.control_loop, self.dt)
         else:
             self.paused = False

@@ -25,6 +25,18 @@ class CarDynamics(Dynamics):
             ])
         Dynamics.__init__(self, 4, 2, f, dt)
 
+class CarDynamics2(Dynamics):
+    def __init__(self, dt=0.5, ub=[(-0.104, 0.104), (-2*0.0878, 0.0878)], friction=0.007943232248521):
+        def f(x,u):
+            return tt.stacklists([
+                ((u[1]-friction*x[3]**2)*dt**2/2+x[3]*dt)*tt.cos(x[2])+x[0],
+                ((u[1]-friction*x[3]**2)*dt**2/2+x[3]*dt)*tt.sin(x[2])+x[1],
+                ((u[1]-friction*x[3]**2)*dt**2/2+x[3]*dt)*u[0]+x[2],
+                (u[1]-friction*x[3]**2)*dt+x[3]
+            ])
+        Dynamics.__init__(self, 4, 2, f, dt=None)
+        self.dt = dt # haxy solution for setting dt back to value after specifying f.
+
 if __name__ == '__main__':
     dyn = CarDynamics(0.1)
     x = tt.vector()
