@@ -1,0 +1,1 @@
+# starts the backend and frontend and log

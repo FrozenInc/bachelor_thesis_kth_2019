@@ -17,13 +17,14 @@ class Dynamics(object):
         return self.f(x, u)
 
 #TODO: rewrite the def f() function to make more sense
+# this is the dynamics of the car, it explains how the cars move in the world, also their positions
 class CarDynamics(Dynamics):
     def __init__(self, dt=0.1, ub=[(-3., 3.), (-1., 1.)], friction=1.):
         def f(x, u):
             return tt.stacklists([
-                x[3]*tt.cos(x[2]),
-                x[3]*tt.sin(x[2]),
-                x[3]*u[0],
-                u[1]-x[3]*friction
+                x[3]*tt.cos(x[2]), # x postion
+                x[3]*tt.sin(x[2]), # y postion
+                x[3]*u[0], # speed
+                u[1]-x[3]*friction # angel
             ])
         Dynamics.__init__(self, 4, 2, f, dt)

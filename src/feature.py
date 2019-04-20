@@ -1,6 +1,7 @@
 # TODO: find how to do this with tensorflow instead
 #import theano as th
 #import theano.tensor as tt
+import tensorflow as tf
 
 # pretty ok
 # TODO: find if tensorflow has all of this already done, it should be faster as it's writen in C and not python
@@ -17,7 +18,7 @@ class Feature(object): #ASK Elis
         return Feature(lambda *args: self(*args)*r) # multiplicerar self arg med en siffra
     def __rmul__(self, r):
         return Feature(lambda *args: r*self(*args)) # samma sak som __mul__ men a andra hallet
-    def __pos__(self, r): 
+    def __pos__(self): 
         return self # returnerar minnes platsen av instansen
     def __neg__(self):
         return Feature(lambda *args: -self(*args)) # byter tecken for argumenten
@@ -49,7 +50,8 @@ def bounded_control(bounds, width=0.05):
     def f(t, x, u): # bygger upp argumenten for "kollisionen" for alla objekt
         ret = 0.
         for i, (a, b) in enumerate(bounds):
-            return -tt.exp((u[i]-b)/width)-tt.exp((a-u[i])/width)
+            return -1.*tf.math.exp((u[i]-b)/width)-tf.math.exp((a-u[i])/width)
+            #return -tt.exp((u[i]-b)/width)-tt.exp((a-u[i])/width)
     return f
 
 if __name__ == '__main__':

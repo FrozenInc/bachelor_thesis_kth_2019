@@ -1,8 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-#import trajectory
-#import utils
+import trajectory
+import utils
 
 class Car(object):
     def __init__(self, dynamic, x_now, color='yellow', time_steps=5):
@@ -88,6 +88,7 @@ class NestedOptimizerCar(Car):
         Car.__init__(self, *args, **vargs)
         self.bounds = [(-3., 3.), (-2., 2.)]
     # TODO: better solution than get/set
+    # TODO: make it modular to be able to take care of N-amount of cars/objects
     #@property
     #def human(self):
     #    return self._human

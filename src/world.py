@@ -187,3 +187,11 @@ def world_kex(know_model=True):
     # ------------------------------------
 
     return world
+
+# creates a world from a json object
+def create_world():
+    pass
+
+# loads the json and serializes it from a file
+def load_world():
+    pass

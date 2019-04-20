@@ -6,6 +6,7 @@ import scipy.optimize
 import numpy as np
 import time
 import utils
+import tensorflow as tf
 
 
 # TODO:
@@ -13,7 +14,55 @@ import utils
 # 2. make it so that it can accept several other cars be it their state or already calculated maximizer (this is for optimization purposes)
 # 3. find what cn be made to multicore and/or gpu acceleration (most stuff are matrix operations so it should be possible)
 # 4. make it possible to calculate several control steps per time step (for example if we want the car to be able to check 5 steps forward, but actually go 25 smaller steps)
+
 class NestedMaximizer(object):
+    def __init__(self, main_car, other_cars_non_maximized=[], other_cars_maximized=[]):
+        # Get the reward and trajectory of the main car
+        self.main_reward = main_car.reward
+        self.main_traj = main_car.traj.u
+
+        # Make a list of all other NOT maximized cars
+        self.other_reward = []
+        self.other_traj = []
+        for i in range(0, len(other_cars_non_maximized)):
+            self.other_reward.append(other_cars_non_maximized[i].reward)
+            self.other_traj.append(other_cars_non_maximized[i].traj.u)
+
+        # Make a list of all other maximized cars
+        self.other_reward_max = []
+        self.other_traj_max = []
+        for i in range(0, len(other_cars_maximized)):
+            self.other_reward_max.append(other_cars_maximized[i].reward)
+            self.other_traj_max.append(other_cars_maximized[i].traj.u)
+
+        # MAIN CAR
+        # -------------------------------
+        self.main_traj_array = [utils.shape(v)[0] for v in self.main_traj]
+        for i in range(1, len(self.main_traj_array)):
+            self.main_traj_array[i] += self.main_traj_array[i-1]
+
+        #makes the array into a 2d-array with (prevoius var, var)
+        self.main_traj_array = [(0 if i==0 else self.main_traj_array[i-1], self.main_traj_array[i]) for i in range(len(self.main_traj_array))] 
+        
+        self.main_traj_grad = utils.grad(self.main_reward, self.main_traj)
+        self.main_traj_new = [tf.zeros([1]) for v in self.main_traj] # CHANGE
+        #self.main_func = th.function(self.main_traj_new, [-self.main_reward, -self.main_traj_grad], givens=zip(self.main_traj, self.main_traj_new)) 
+        self.main_func =  
+        # # IMPORTANT: VERY VERY VERY SLOW
+
+        def f1_and_df1(x0):
+            return self.main_func(*[x0[a:b] for a, b in self.main_traj_array])
+        self.f1_and_df1 = f1_and_df1
+
+        # -------------------------------
+
+        # OTHER CAR NON OPTIMIZED:
+        # -------------------------------
+
+
+        # -------------------------------        
+
+class NestedMaximizerOLD(object):
     # kors bara for nested optimizer i car.py, hoppa over sa lange. 
     # f1, vs1 are other car
     # f2, vs2 are own car
@@ -26,24 +75,29 @@ class NestedMaximizer(object):
         #-----
 
         # 
-        self.sz1 = [shape(v)[0] for v in self.vs1] # converts from tensor variable to normal array (uses also some math magic)
-        self.sz2 = [shape(v)[0] for v in self.vs2]
+        self.sz1 = [utils.shape(v)[0] for v in self.vs1] # converts from tensor variable to normal array (uses also some math magic)
+        self.sz2 = [utils.shape(v)[0] for v in self.vs2]
         for i in range(1, len(self.sz1)): # adds together all future sz1 with old sz1
             self.sz1[i] += self.sz1[i-1]
         self.sz1 = [(0 if i==0 else self.sz1[i-1], self.sz1[i]) for i in range(len(self.sz1))] #makes the array into a 2d-array with (prevoius var, var)
         for i in range(1, len(self.sz2)): # same thing az sz1
             self.sz2[i] += self.sz2[i-1]
         self.sz2 = [(0 if i==0 else self.sz2[i-1], self.sz2[i]) for i in range(len(self.sz2))] # samme thing as sz1
-        self.df1 = grad(self.f1, vs1) # IMPORTANT: VERY SLOW
+        self.df1 = utils.grad(self.f1, vs1) # IMPORTANT: VERY SLOW
+        
         self.new_vs1 = [tt.vector() for v in self.vs1] # back from normal array to tensorVector
+
+        self.new_vs1 = [tf.zeros([1]) for v in self.vs1] # not sure if correct in tensorflow
+
+
         self.func1 = th.function(self.new_vs1, [-self.f1, -self.df1], givens=zip(self.vs1, self.new_vs1)) # IMPORTANT: VERY VERY VERY SLOW
         def f1_and_df1(x0):
             return self.func1(*[x0[a:b] for a, b in self.sz1])
         self.f1_and_df1 = f1_and_df1
-        J = jacobian(grad(f1, vs2), vs1) # IMPORTANT: VERY VERY VERY VERY SLOW
-        H = hessian(f1, vs1) # IMPORTANT: VERY VERY VERY VERY SLOW
-        g = grad(f2, vs1 )# IMPORTANT: SLOW
-        self.df2 = -tt.dot(J, ts.solve(H, g))+grad(f2, vs2) # IMPORTANT: SLOW
+        J = utils.jacobian(utils.grad(f1, vs2), vs1) # IMPORTANT: VERY VERY VERY VERY SLOW
+        H = utils.hessian(f1, vs1) # IMPORTANT: VERY VERY VERY VERY SLOW
+        g = utils.grad(f2, vs1 )# IMPORTANT: SLOW
+        self.df2 = -tt.dot(J, ts.solve(H, g))+utils.grad(f2, vs2) # IMPORTANT: SLOW
         self.func2 = th.function([], [-self.f2, -self.df2]) # IMPORTANT: EXREMELY SLOW
         def f2_and_df2(x0):
             for v, (a, b) in zip(self.vs2, self.sz2):
@@ -98,19 +152,19 @@ class Maximizer(object):
         self.pre = pre # ingen anning
         self.f = f # ingen anning
         self.vs = vs # ingen anning
-        self.sz = [shape(v)[0] for v in self.vs] # ingen anning
+        self.sz = [utils.shape(v)[0] for v in self.vs] # ingen anning
         for i in range(1,len(self.sz)):
             self.sz[i] += self.sz[i-1]
         self.sz = [(0 if i==0 else self.sz[i-1], self.sz[i]) for i in range(len(self.sz))]
         if isinstance(g, dict):
-            self.df = tt.concatenate([g[v] if v in g else grad(f, v) for v in self.vs])
+            self.df = tt.concatenate([g[v] if v in g else utils.grad(f, v) for v in self.vs])
         else:
             self.df = g
         self.new_vs = [tt.vector() for v in self.vs]
         self.func = th.function(self.new_vs, [-self.f, -self.df], givens=zip(self.vs, self.new_vs))
         def f_and_df(x0): #ASK Elis
             if self.debug:
-                print x0
+                print (x0)
             s = None
             N = 0
             for _ in self.gen():
