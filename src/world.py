@@ -69,7 +69,7 @@ class World(object):
         return r
 
 def world_kex(know_model=True):
-    dyn = dynamics.CarDynamics2(0.5)
+    dyn = dynamics.CarDynamics2(0.1)
     #dyn.dt = 1.0
     #dyn.fiction = 0.0
     world = World()
@@ -100,14 +100,14 @@ def world_kex(know_model=True):
     else:
         # Create the cars-----
         # Human Car
-        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, 0.04, math.pi/2., 0.5], color='red'))
+        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, 0.04, math.pi/2., 0.5], color='red', T=3))
         # Robot Car
-        world.cars.append(car.NestedOptimizerCarFollower(dyn, [0., 0., math.pi/2., 0.5], color='yellow'))
+        world.cars.append(car.NestedOptimizerCarFollower(dyn, [0., 0., math.pi/2., 0.5], color='yellow', T=3))
         # --------------------
             
     
     # Obstacle Car
-    #world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 0.5, math.pi/2., 0.5], color='blue'))
+    #world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 0.5, math.pi/2., 0.5], color='blue')) # doesnt work because it cant force the car to turn around
     world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 2, math.pi/4., 0.], color='blue'))
     # --------------------
     
@@ -166,10 +166,10 @@ def world_kex(know_model=True):
         r_r = 0.5*world.simple_reward([world.cars[1].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds)+1*world.simple_reward(world.cars[1].traj_o, speed=0.8) # Reward for the robot
     else:
         # HUMAN
-        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.3)+100.*feature.bounded_control(world.cars[0].bounds)+5*world.simple_reward(world.cars[0].traj_o, speed=0.3)# Reward for the human
+        r_h = world.simple_reward([world.cars[0].traj_h], speed=0.8)+100.*feature.bounded_control(world.cars[0].bounds)+5*world.simple_reward(world.cars[0].traj_o, speed=0.8)# Reward for the human
 
         # ROBOT
-        r_r = world.simple_reward([world.cars[0].traj], speed=0.3)+100.*feature.bounded_control(world.cars[1].bounds)+5*world.simple_reward(world.cars[1].traj_o, speed=0.3)# Reward for the robot
+        r_r = world.simple_reward([world.cars[0].traj], speed=0.8)+100.*feature.bounded_control(world.cars[1].bounds)+5*world.simple_reward(world.cars[1].traj_o, speed=0.8)# Reward for the robot
      
     r_o = 1.*feature.bounded_control(world.cars[2].bounds)
     #r_o = world.simple_reward([world.cars[0].traj_o], speed=0.)

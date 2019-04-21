@@ -3,7 +3,8 @@ import utils
 import theano as th
 import theano.tensor as tt
 import theano.tensor.slinalg as ts
-from trajectory import Trajectory
+from trajectory import Trajectory, Trajectory2
+#from trajectory import Trajectory2 as Trajectory
 import feature
 
 class Car(object):
@@ -12,9 +13,9 @@ class Car(object):
         self.bounds = [(-1., 1.), (-1., 1.)] # kollisions boxen for bilen
         self.T = T # hur manga tidsteg fram den ska berakna
         self.dyn = dyn # dynamiken for bilen 
-        self.traj = Trajectory(T, dyn) # trajectory for bilen som ar utraknad med hjalp av reward, ar i framtiden
+        self.traj = Trajectory2(T, dyn) # trajectory for bilen som ar utraknad med hjalp av reward, ar i framtiden
         self.traj.x0.set_value(x0) # satter start vardet for trajectory
-        self.linear = Trajectory(T, dyn) # samma sak som traj, men i tiden nu 
+        self.linear = Trajectory2(T, dyn) # samma sak som traj, men i tiden nu 
         self.linear.x0.set_value(x0)
         self.color = color # byter farg pa bilen
         self.default_u = np.zeros(self.dyn.nu) # gor en matris av storleken av kontroll variabeln med bara nollor for att ha ne referens
@@ -47,6 +48,8 @@ class Car(object):
             pass
     def control(self, steer, gas): # gor literally ingenting
         pass
+
+
 
 class UserControlledCar(Car): # klassen for en bil som kan koras av en riktig person
     # expanderar pa klassen Car
@@ -174,7 +177,7 @@ class NestedOptimizerCarFollower(Car):
     @obstacle.setter
     def obstacle(self, value):
         self._obstacle = value
-        self.traj_o = Trajectory(self.T, self.obstacle.dyn)
+        self.traj_o = Trajectory2(self.T, self.obstacle.dyn)
         self.r_temp = 0
     # -------------
 
@@ -185,7 +188,7 @@ class NestedOptimizerCarFollower(Car):
     @leader.setter
     def leader(self, value):
         self._leader = value
-        self.traj_h = Trajectory(self.T, self.leader.dyn)
+        self.traj_h = Trajectory2(self.T, self.leader.dyn)
     #----------------
 
     # Move and update traj for leader and obstacle---
@@ -235,12 +238,13 @@ class NestedOptimizerCarFollower(Car):
             
             # TODO: fixa optimizer to care about obstacles too
         for i in range(0, len(self.traj_h.u)):
-            print self.traj_h.u[i].eval()
+            #print self.traj_h.u[i].eval()
             #self.traj_h.u[i] = tt.TensorType('float64', (0,)*2)
             k = np.transpose(np.array([0., 0.]))
             self.traj_h.u[i].set_value(k)
         for i in range(0, len(self.traj_h.u)):
-            print self.traj_h.u[i].eval()
+            pass
+            #print self.traj_h.u[i].eval()
             
         self.traj_h.x0.set_value(self.leader.x)
         self.traj_o.x0.set_value(self.obstacle.x)
@@ -263,7 +267,7 @@ class NestedOptimizerCarLeader(Car):
     @obstacle.setter
     def obstacle(self, value):
         self._obstacle = value
-        self.traj_o = Trajectory(self.T, self.obstacle.dyn)
+        self.traj_o = Trajectory2(self.T, self.obstacle.dyn)
     # -------------
 
     # Follower --------
@@ -273,7 +277,7 @@ class NestedOptimizerCarLeader(Car):
     @follower.setter
     def follower(self, value):
         self._follower = value
-        self.traj_h = Trajectory(self.T, self.follower.dyn)
+        self.traj_h = Trajectory2(self.T, self.follower.dyn)
     # -----------------
 
     # Move and update traj for follower and obstacle---
@@ -291,21 +295,44 @@ class NestedOptimizerCarLeader(Car):
         self._rewards = vals
         self.optimizer = None
     def control(self, steer, gas):
+
         if self.optimizer is None:
             reward_h, reward_r, reward_o = self.rewards
             reward_h = reward_h + reward_o
 
-            reward_h = self.traj_h.reward(reward_h)
             reward_r = self.traj.reward(reward_r)
+            reward_h = self.traj_h.reward(reward_h)
             reward_o = self.traj_o.reward(reward_o)
             # TEST:
             #reward_h = reward_h + reward_o
+
+            #print self.traj.u
+            #print "-------------"
+            #for k in self.traj.u:
+            #    print k.eval()
+            
+            #print "-------------"
+            temp = []
+            for i in range(len(self.traj.u)):
+                for j in range(5):
+                    temp.append(self.traj.u[i])
+            k = self.traj.u
+            self.traj.u = temp
+            #print(temp)
+            #print "-------------"
+            #exit()
         
             # reward_r ar for leader
             # reward_h ar for follower
-            self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
+            #self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
+            self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, k)
+            
             # TODO: fixa optimizer to care about obstacles too
         self.traj_h.x0.set_value(self.follower.x)
         self.traj_o.x0.set_value(self.obstacle.x)
         self.optimizer.maximize(bounds = self.bounds)
+        for i in self.traj.u:
+            print i.eval()
+        #print self.traj.u
+        print "---------------"
 
