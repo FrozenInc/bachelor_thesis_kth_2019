@@ -49,7 +49,7 @@ class Trajectory(object):
         """
 
 class Trajectory2(object):
-    def __init__(self, Tu, dyn, step_per_u=5):
+    def __init__(self, Tu, dyn, step_per_u=3):
         self.dyn = dyn # dynamiken for systemet
         self.Tu = Tu
         self.step_per_u = step_per_u

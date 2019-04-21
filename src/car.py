@@ -225,13 +225,14 @@ class NestedOptimizerCarFollower(Car):
             #exit()
             
             for i in range(0, len(self.traj_h.u)):
-                print self.traj_h.u[i].eval()
+                #print self.traj_h.u[i].eval()
                 #self.traj_h.u[i] = tt.TensorType('float64', (0,)*2)
                 k = np.transpose(np.array([0., 0.]))
                 self.traj_h.u[i].set_value(k)
             for i in range(0, len(self.traj_h.u)):
-                print self.traj_h.u[i].eval()
-                print self.traj_h.u[i]
+                #print self.traj_h.u[i].eval()
+                #print self.traj_h.u[i]
+                pass
             #exit()
 
             self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
@@ -331,8 +332,8 @@ class NestedOptimizerCarLeader(Car):
         self.traj_h.x0.set_value(self.follower.x)
         self.traj_o.x0.set_value(self.obstacle.x)
         self.optimizer.maximize(bounds = self.bounds)
-        for i in self.traj.u:
-            print i.eval()
+        #for i in self.traj.u:
+        #    print i.eval()
         #print self.traj.u
-        print "---------------"
+        #print "---------------"
 
