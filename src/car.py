@@ -103,6 +103,10 @@ class SimpleOptimizerCar(Car): # expanderar Car klassen
         self.optimizer = None # skapar en tom optimizer
     def control(self, steer, gas):
         print len(self.cache) # VIKTIGT: printar ut vilken tidsteg ar nu
+        self.cache.append(None)
+        if len(self.cache) >= 40:
+            print "Exiting"
+            exit()
         if self.movable == False:
             self.index += 1
 
@@ -110,7 +114,8 @@ class SimpleOptimizerCar(Car): # expanderar Car klassen
             #print self.traj.reward(self.reward).eval()
             #IMPORTANT
             return
-        
+
+
         if self.index<len(self.cache):
             self.u = self.cache[self.index]
         else:
@@ -129,7 +134,7 @@ class SimpleOptimizerCar(Car): # expanderar Car klassen
             self.sync(self.cache)
         # gar fram en tidsteg
         self.index += 1
-
+        
 class NestedOptimizerCar(Car):
     # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
     def __init__(self, *args, **vargs):
@@ -167,6 +172,7 @@ class NestedOptimizerCarFollower(Car):
     # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
     def __init__(self, *args, **vargs):
         Car.__init__(self, *args, **vargs)
+        #self.bounds = [(-3., 3.), (-2., 2.)]
         self.bounds = [(-3., 3.), (-2., 2.)]
         self.leader1 = None
 
@@ -194,8 +200,8 @@ class NestedOptimizerCarFollower(Car):
     # Move and update traj for leader and obstacle---
     def move(self):
         Car.move(self)
-        self.traj_h.tick()
-        self.traj_o.tick()
+        #self.traj_h.tick()
+        #self.traj_o.tick()
     # -----------------------------------------------
     @property
     def rewards(self):
@@ -268,11 +274,11 @@ class NestedOptimizerCarFollower2(Car):
             self.optimizer = 1
             #self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
             
-        
-        print self.leader.traj_h.u[0].get_value()
+        print "----------------------"
         self.traj.u[0].set_value(self.leader.traj_h.u[0].get_value())
         self.traj.u[1].set_value(self.leader.traj_h.u[1].get_value())
         self.traj.u[2].set_value(self.leader.traj_h.u[2].get_value())
+        #print self.leader.traj_h.u[0].get_value()
         print self.traj.u[0].get_value()
         
 
@@ -332,8 +338,11 @@ class NestedOptimizerCarLeader(Car):
             # reward_r ar for leader
             # reward_h ar for follower
             self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
-            
+        
+
         self.traj_h.x0.set_value(self.follower.x)
         self.traj_o.x0.set_value(self.obstacle.x)
         self.optimizer.maximize(bounds = self.bounds)
+        
+
         #print "Directly from leader: ", self.traj_h.u[0].get_value()
