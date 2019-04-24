@@ -88,14 +88,15 @@ def world_kex(know_model = True):
     # 1. both begind
     # 2. both infront
     # 3. different behaviour depending on role
+    # to get the distance take the pos/0.13 to get it to irl meters
 
 
-    left_is_follower = False
+    left_is_follower = True
     T_steps = 3
     speed = 0.80
     pos = 0.128
 
-    pos = 0.028
+    #pos = 0.028
     
 
 
