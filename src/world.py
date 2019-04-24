@@ -78,15 +78,24 @@ def world_kex(know_model = True):
     #world.roads += [clane, clane.shifted(1)]
     world.fences += [clane.shifted(2), clane.shifted(-1)]
 
-    # both behind: pos=0.0
-    # both infront: pos=0.128 (defferent behaviours) and pos=0.129 (both infront) to switch
+    # both behind: pos=0.027 (both begind) and pos=0.028 (different behaviours)
+    # both infront: pos=0.128 (different behaviours) and pos=0.129 (both infront) to switch
+    # We run:
+    # T_stepls = 3
+    # step_per_u = 2
+    # speed = 0.80
+    # we have 3 different results:
+    # 1. both begind
+    # 2. both infront
+    # 3. different behaviour depending on role
+
 
     left_is_follower = False
     T_steps = 3
     speed = 0.80
     pos = 0.128
 
-    pos = 0.02
+    pos = 0.028
     
 
 
