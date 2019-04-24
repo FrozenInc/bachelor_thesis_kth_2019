@@ -242,7 +242,9 @@ class NestedOptimizerCarFollower2(Car):
     # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
     def __init__(self, *args, **vargs):
         Car.__init__(self, *args, **vargs)
+        #self.bounds = [(-2., 2.), (-2., 2.)] #[(-3., 3.), (-2., 2.)]
         self.bounds = [(-1., 1.), (-1., 1.)] #[(-3., 3.), (-2., 2.)]
+
         self.leader = None
 
     # Move and update traj for leader and obstacle---
@@ -284,6 +286,7 @@ class NestedOptimizerCarLeader(Car):
     # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
     def __init__(self, *args, **vargs):
         Car.__init__(self, *args, **vargs)
+        #self.bounds = [(-2., 2.), (-2., 2.)] #[(-3., 3.), (-2., 2.)]
         self.bounds = [(-1., 1.), (-1., 1.)] #[(-3., 3.), (-2., 2.)]
 
     # Obstacle-----
