@@ -78,11 +78,25 @@ def world_kex(know_model = True):
     #world.roads += [clane, clane.shifted(1)]
     world.fences += [clane.shifted(2), clane.shifted(-1)]
 
-    left_is_follower = True
+    # both behind: pos=0.0
+    # both infront: pos=0.128 (defferent behaviours) and pos=0.129 (both infront) to switch
+
+    left_is_follower = False
     T_steps = 3
     speed = 0.80
-    #pos = 0.05
-    pos = 0.10
+    pos = 0.128
+
+    pos = 0.02
+    
+
+
+    # THIS WORKS
+    # steps per u is 2
+    #left_is_follower = False
+    #T_steps = 3
+    #pos = 0.10 #WORKS
+    #speed = 0.80
+
 
     # Follower must alwasy be created first, otherwise it won't move
     if left_is_follower:
