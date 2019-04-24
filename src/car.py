@@ -27,13 +27,8 @@ class Car(object):
             self.traj.u[t].set_value(np.zeros(self.dyn.nu))
             self.linear.u[t].set_value(self.default_u)
     def move(self): # flyttar fram bilen
-        if self.movable:
-            self.traj.tick()
-            self.linear.x0.set_value(self.traj.x0.get_value())
-        else:
-            self.traj.tick()            
-            self.linear.x0.set_value(self.traj.x0.get_value())
-            pass
+        self.traj.tick()
+        self.linear.x0.set_value(self.traj.x0.get_value())
     @property # tar value av x0
     def x(self):
         return self.traj.x0.get_value()
@@ -247,7 +242,7 @@ class NestedOptimizerCarFollower2(Car):
     # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
     def __init__(self, *args, **vargs):
         Car.__init__(self, *args, **vargs)
-        self.bounds = [(-3., 3.), (-2., 2.)]
+        self.bounds = [(-1., 1.), (-1., 1.)] #[(-3., 3.), (-2., 2.)]
         self.leader = None
 
     # Move and update traj for leader and obstacle---
@@ -264,7 +259,7 @@ class NestedOptimizerCarFollower2(Car):
     def control(self, steer, gas):
         if self.optimizer is None:
         #if True:
-            reward_h, reward_r, reward_o = self.rewards
+            reward_h, reward_r= self.rewards
             #reward_h = reward_h + reward_o
             
             #reward_h = self.traj_h.reward(reward_h)
@@ -275,9 +270,10 @@ class NestedOptimizerCarFollower2(Car):
             #self.optimizer = utils.NestedMaximizer(reward_h, self.traj_h.u, reward_r, self.traj.u)
             
         print "----------------------"
-        self.traj.u[0].set_value(self.leader.traj_h.u[0].get_value())
-        self.traj.u[1].set_value(self.leader.traj_h.u[1].get_value())
-        self.traj.u[2].set_value(self.leader.traj_h.u[2].get_value())
+        for i in range(len(self.traj.u)):
+            self.traj.u[i].set_value(self.leader.traj_h.u[i].get_value())
+        #self.traj.u[1].set_value(self.leader.traj_h.u[1].get_value())
+        #self.traj.u[2].set_value(self.leader.traj_h.u[2].get_value())
         #print self.leader.traj_h.u[0].get_value()
         print self.traj.u[0].get_value()
         
@@ -288,7 +284,7 @@ class NestedOptimizerCarLeader(Car):
     # skippa sa lange, dubbelkolla med elis om vi ska ha med den. 
     def __init__(self, *args, **vargs):
         Car.__init__(self, *args, **vargs)
-        self.bounds = [(-3., 3.), (-2., 2.)]
+        self.bounds = [(-1., 1.), (-1., 1.)] #[(-3., 3.), (-2., 2.)]
 
     # Obstacle-----
     @property
@@ -327,12 +323,11 @@ class NestedOptimizerCarLeader(Car):
     def control(self, steer, gas):
 
         if self.optimizer is None:
-            reward_h, reward_r, reward_o = self.rewards
-            reward_h = reward_h + reward_o
+            reward_h, reward_r= self.rewards
+            
 
             reward_r = self.traj.reward(reward_r)
             reward_h = self.traj_h.reward(reward_h)
-            reward_o = self.traj_o.reward(reward_o)
 
         
             # reward_r ar for leader

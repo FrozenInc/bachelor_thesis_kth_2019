@@ -286,6 +286,9 @@ class Visualizer(object):
         for car in self.cars:
             if car!=self.main_car and car not in self.visible_cars:
                 self.draw_car(self.anim_x[car], car.color)
+                for temp in range(len(car.traj.x)):
+                    point = car.traj.x[temp].eval()
+                    self.draw_car(point, car.color)
         if self.heat is not None:
             self.draw_heatmap()
         for car in self.cars:
@@ -293,15 +296,12 @@ class Visualizer(object):
                 self.draw_car(self.anim_x[car], car.color)
                 for temp in range(len(car.traj.x)):
                     point = car.traj.x[temp].eval()
-                    #print self.anim_x[car]
-                    #print point
-                    #exit()
                     self.draw_car(point, car.color)
 
         gl.glPopMatrix()
         if isinstance(self.main_car, Car):
-            self.label.text = 'Speed human: %.2f'%self.anim_x[self.main_car][3]
-            self.label2.text = 'Speed robot: %.2f'%self.anim_x[self.cars[1]][3]
+            self.label.text = 'Speed follower: %.2f'%self.anim_x[self.main_car][3]
+            self.label2.text = 'Speed leader: %.2f'%self.anim_x[self.cars[1]][3]
             self.label.draw()
             self.label2.draw()
         if self.output is not None:

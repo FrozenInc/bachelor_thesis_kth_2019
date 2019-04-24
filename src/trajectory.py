@@ -66,6 +66,7 @@ class Trajectory2(object):
         self.next_x = th.function([], self.x[0]) # konverterar grafen av states till en callable object
     def tick(self):
         self.x0.set_value(self.next_x()) # lagg nasta state som x_0 state
+        #Below is probab not needed
         for t in range(self.Tu-1):
             self.u[t].set_value(self.u[t+1].get_value()) # lagg nasta kontroll variabel som nuvarande kontroll variabel
         self.u[self.Tu-1].set_value(np.zeros(self.dyn.nu)) # gor en ny tid T som ar langst bak till nollor

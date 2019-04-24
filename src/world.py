@@ -78,17 +78,18 @@ def world_kex(know_model = True):
     #world.roads += [clane, clane.shifted(1)]
     world.fences += [clane.shifted(2), clane.shifted(-1)]
 
-    left_is_follower = False
+    left_is_follower = True
+    T_steps = 4
 
     # Follower must alwasy be created first, otherwise it won't move
     if left_is_follower:
-        world.cars.append(car.NestedOptimizerCarFollower2(dyn, [-0.13, 0.0, math.pi/2., 0.5], color='red', T=3))
+        world.cars.append(car.NestedOptimizerCarFollower2(dyn, [-0.13, 0.05, math.pi/2., 0.5], color='yellow', T=T_steps))
 
-        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.0, 0.0, math.pi/2., 0.5], color='yellow', T=3))
+        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.0, 0.0, math.pi/2., 0.5], color='red', T=T_steps))
     else:
-        world.cars.append(car.NestedOptimizerCarFollower2(dyn, [-0.0, 0.0, math.pi/2., 0.5], color='yellow', T=3))
+        world.cars.append(car.NestedOptimizerCarFollower2(dyn, [-0.0, 0.0, math.pi/2., 0.5], color='yellow', T=T_steps))
 
-        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, 0.0, math.pi/2., 0.5], color='red', T=3))
+        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, 0.05, math.pi/2., 0.5], color='red', T=T_steps))
 
     world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 2, math.pi/4., 0.], color='blue'))
 
@@ -107,15 +108,16 @@ def world_kex(know_model = True):
     world.cars[0].obstacle = world.cars[2]
     world.cars[1].obstacle = world.cars[2]
 
-    r_leader = world.simple_reward(world.cars[1].traj_h, speed=0.80)+100.*feature.bounded_control(world.cars[1].bounds)+world.simple_reward(world.cars[1].traj_o, speed=0.80)
+    r_leader = world.simple_reward([world.cars[1].traj_h, world.cars[1].traj_o], speed=0.80)
+    # leader doesnt need bounded controls, only the follower
 
-    r_follower = world.simple_reward(world.cars[1].traj, speed=0.80)+100.*feature.bounded_control(world.cars[0].bounds)+world.simple_reward(world.cars[1].traj_o, speed=0.80)
+    r_follower = world.simple_reward([world.cars[1].traj, world.cars[1].traj_o], speed=0.80)+100.*feature.bounded_control(world.cars[0].bounds)
 
-    r_o = 1.*feature.bounded_control(world.cars[2].bounds)
+    r_o = 0.
     #r_o = world.simple_reward([world.cars[0].traj_o], speed=0.)
 
-    world.cars[0].rewards = (r_leader, r_follower, r_o)
-    world.cars[1].rewards = (r_follower, r_leader, r_o)
+    world.cars[0].rewards = (r_leader, r_follower)
+    world.cars[1].rewards = (r_follower, r_leader)
     # ------------------------------------
 
     return world
