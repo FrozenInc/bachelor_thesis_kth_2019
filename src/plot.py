@@ -5,7 +5,8 @@ matplotlib.use('Agg')
 import matplotlib.font_manager as font_manager
 import csv
 
-fontpath = './transfonter/cmr10.ttf' # Elis: was './transfonter/Palatino-Roman.ttf'
+#fontpath = './transfonter/cmr10.ttf' # Elis: was './transfonter/Palatino-Roman.ttf'
+fontpath = './transfonter/FCR.ttf' # Elis: was './transfonter/Palatino-Roman.ttf'
 prop = font_manager.FontProperties(fname=fontpath)
 matplotlib.rcParams['font.family'] = prop.get_name()
 
@@ -34,8 +35,12 @@ def load(filename):
     # human first, robot later
     # it unpacks the .pickle file
     u, x = ret
-    uh, ur = u
-    xh, xr = x
+    # ur, xr = robot
+    # uh, xh = human
+    # uo, xo = obstacle (not used)
+
+    uh, ur, uo = u
+    xh, xr, xo = x
     t = arange(len(xh))*dt
     if filename.split('/')[0] in ['data', 'unique_data']:
         user = '0'
@@ -47,9 +52,11 @@ def load(filename):
             condition = 'purple (right)'
         traj = 0
     else:
-        user = int(filename.split('/')[1].split('-')[0][1:])
+        #user = int(filename.split('/')[1].split('-')[0][1:])
+        user = 1
+        traj = 1
         world = filename.split('/')[-1].split('-')[0]
-        traj = int(filename.split('/')[-1].split('-')[-1].split('.')[0])
+        #traj = int(filename.split('/')[-1].split('-')[-1].split('.')[0])
         condition = {
             'world0': 'gray',
             'world1': 'orange',
@@ -57,7 +64,8 @@ def load(filename):
             'world3': 'blue',
             'world4': 'orange',
             'world5': 'gray',
-            'test': ''
+            'test': '',
+            'world_kex.pickle': 'orange'
         }[world]
     # human is uh and xh
     # robot is ur and xr
@@ -83,17 +91,21 @@ def cextend(a, w):
         return a[:w]
     return concatenate([a, asarray([a[-1]]*(w-len(a)))])
 
-worlds = ['world{}'.format(i) for i in range(6)] + ['test']
+#worlds = ['world{}'.format(i) for i in range(6)] + ['test']
+worlds = ['world_kex']
 datasets = {}
 for w in worlds:
-    print(ls("saved_data/*/{}*".format(w)))
-    datasets[w] = [load(x) for x in ls("saved_data/*/{}*".format(w))]
+    #print(ls("saved_data/*/{}*".format(w)))
+    print(ls("saved_data/{}*".format(w)))
+    datasets[w] = [load(x) for x in ls("saved_data/{}*".format(w))]
     datasets[w] = [data for data in datasets[w] if not isempty(data)]
 
 for w, dataset in datasets.items():
     print '{}: {} samples'.format(w, len(dataset))
 
 print '-'*20
+
+
 
 
 def plotAnimate():
@@ -278,6 +290,108 @@ def plot23():
     figlegend((plots['opt'], plots['world0'], plots['world2'], plots['world3']), ('Learned Human Model', 'Avoid Human', 'Affect Human (Left)', 'Affect Human (Right)'), 'upper center', ncol=4, fontsize=10)
     savefig('plots/plot23.pdf')
 
+
+def kex_plot_1():
+    T = dt*35
+    def setup(flag1=True, flag2=True):
+        # fix the axis
+        gca().spines['right'].set_visible(flag2)
+        gca().spines['top'].set_visible(flag2)
+        gca().spines['left'].set_visible(flag1)
+        gca().spines['bottom'].set_visible(flag1)
+        gca().xaxis.set_ticks_position('bottom')
+        gca().yaxis.set_ticks_position('left')
+
+        if not flag1 and not flag2:
+            tick_params(
+                axis='x',
+                which='both',      # both major and minor ticks are affected
+                bottom='off',      # ticks along the bottom edge are off
+                top='off',         # ticks along the top edge are off
+                labelbottom='off')
+            tick_params(
+                axis='y',
+                which='both',      # both major and minor ticks are affected
+                bottom='off',      # ticks along the bottom edge are off
+                top='off',         # ticks along the top edge are off
+                labelbottom='off')
+            gca().get_xaxis().set_ticks([])
+            gca().get_yaxis().set_ticks([])
+        xlim(0., T)
+    opt = load('saved_data/world_kex.pickle')
+
+
+    data = datasets['world_kex'][0]
+    
+
+    # Specifies the position, name and labels of the first graph
+    # Speed Graph
+    figure(figsize=(9, 7))
+    subplot(2, 2, 1)
+    ylabel('Speed')
+    xlabel('(a)')
+    setup()
+    s1 = plot(data['t'], data['xh'][:, 3], color=LIGHT_BLUE, linewidth=1.)
+    s2 = plot(data['t'], data['xr'][:, 3], color=LIGHT_ORANGE, linewidth=1.)
+    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Follower')
+    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Leader')
+    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
+    
+    # Graph for the x-pos
+    subplot(2, 2, 2)
+    setup()
+    ylabel('X Position')
+    xlabel('(b)')
+    ylim(0., 3.)
+    x1 = plot(data['t'], data['xh'][:, 1], color=LIGHT_BLUE, linewidth=1.)
+    x2 = plot(data['t'], data['xr'][:, 1], color=LIGHT_ORANGE, linewidth=1.)
+    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Follower')
+    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Leader')
+    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
+
+    # Graph for the acceleration
+    subplot(2, 2, 3)
+    setup()
+    ylabel('Acceleration')
+    xlabel('(c)')
+    ylim(0., 3.)
+    a1 = plot(data['t'], data['xh'][:, 2], color=LIGHT_BLUE, linewidth=1.)
+    a2 = plot(data['t'], data['xr'][:, 2], color=LIGHT_ORANGE, linewidth=1.)
+    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Follower')
+    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Leader')
+    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
+    
+    
+    # Graph for the y-pos
+    subplot(2, 2, 4)
+    setup()
+    ylabel('Y Position')
+    xlabel('(d)')
+    ylim(-.5, .5)
+    y1 = plot(data['t'], data['xh'][:, 0], color=LIGHT_BLUE, linewidth=1.)
+    y2 = plot(data['t'], data['xr'][:, 0], color=LIGHT_ORANGE, linewidth=1.)
+    
+
+    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Follower')
+    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Leader')
+    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
+    
+
+    
+    savefig('plots/world02.pdf', transparent=True)
+
+    
+    exit()
+
+    for w, color in [('world_kex', LIGHT_ORANGE), ('world_kex', LIGHT_BLUE)]:
+        dataset = datasets[w]
+        for data in dataset[::2]:
+            plot(data['t'], data['xh'][:, 3], color=color, linewidth=0.7)
+    plot(opt['t'], opt['xh'][:, 3], color=PURPLE, linewidth=1.)
+    savefig('plots/world01.pdf', transparent=True)
+
+
+
 def plot01():
     T = dt*35
     def setup(flag1=True, flag2=False):
@@ -306,13 +420,15 @@ def plot01():
             gca().get_xaxis().set_ticks([])
             gca().get_yaxis().set_ticks([])
         xlim(0., T)
-    opt = load('unique_data/world1-opt.pickle')
+    #opt = load('unique_data/world1-opt.pickle')
+    opt = load('saved_data/world_kex.pickle')
+    
     figure(figsize=(9, 7))
     subplot(2, 2, 1)
     xlabel('(a)')
     setup(False, False)
     ylabel('speed')
-    for w, color in [('world0', LIGHT_GRAY), ('world1', LIGHT_ORANGE)]:
+    for w, color in [('world_kex', LIGHT_GRAY), ('world_kex', LIGHT_ORANGE)]:
         dataset = datasets[w]
         for data in dataset[::2]:
             plot(data['t'], data['xh'][:, 3], color=color, linewidth=0.7)
@@ -321,7 +437,7 @@ def plot01():
     setup()
     xlabel('time (s)\n(b)')
     ylabel('average speed')
-    for w, col1, col2 in [('world0', DARK_GRAY, LIGHT_GRAY), ('world1', DARK_ORANGE, LIGHT_ORANGE)]:
+    for w, col1, col2 in [('world_kex', DARK_GRAY, LIGHT_GRAY), ('world_kex', DARK_ORANGE, LIGHT_ORANGE)]:
         dataset = datasets[w]
         d = np.stack(extend(data['xh'][:, 3], T/dt+1) for data in dataset)
         m = nanmean(d, axis=0)
@@ -337,7 +453,7 @@ def plot01():
     xlabel('time (s)\n(d)')
     ylabel('average latitude')
     plots = {}
-    for w, col1, col2 in [('world0', DARK_GRAY, LIGHT_GRAY), ('world1', DARK_ORANGE, LIGHT_ORANGE)]:
+    for w, col1, col2 in [('world_kex', DARK_GRAY, LIGHT_GRAY), ('world_kex', DARK_ORANGE, LIGHT_ORANGE)]:
         dataset = datasets[w]
         d = np.stack(extend(data['xh'][:, 1], T/dt+1) for data in dataset)
         m = nanmean(d, axis=0)
@@ -353,12 +469,12 @@ def plot01():
     ylabel('latitude')
     xlabel('(c)')
     ylim(0., 3.)
-    for w, color in [('world0', LIGHT_GRAY), ('world1', LIGHT_ORANGE)]:
+    for w, color in [('world_kex', LIGHT_GRAY), ('world_kex', LIGHT_ORANGE)]:
         dataset = datasets[w]
         for data in dataset[::2]:
             plot(data['t'], data['xh'][:, 1], color=color, linewidth=0.7)
     plot(opt['t'], opt['xh'][:, 1], color=PURPLE, linewidth=1.)
-    figlegend((plots['opt'], plots['world0'], plots['world1']), ('Learned Human Model', 'Avoid Human', 'Affect Human'), 'upper center', ncol=3)
+    figlegend((plots['opt'], plots['world_kex'], plots['world_kex']), ('Learned Human Model', 'Avoid Human', 'Affect Human'), 'upper center', ncol=3)
     savefig('plots/world01.pdf', transparent=True)
 
 def plotNumbers():
@@ -449,6 +565,7 @@ def plotNumbers():
 
 #plotNumbers()
 #show()
-plot01()
+#plot01()
 #plot23()
 #plot45()
+kex_plot_1()

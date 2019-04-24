@@ -92,9 +92,13 @@ def world_kex(know_model = True):
 
 
     left_is_follower = True
+
+    #pos = 0.14
+    pos=0.0
+
     T_steps = 3
     speed = 0.80
-    pos = 0.128
+    #pos = 0.128
 
     #pos = 0.028
     
@@ -119,7 +123,7 @@ def world_kex(know_model = True):
         world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, pos, math.pi/2., speed], color='red', T=T_steps))
 
     #world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 2, math.pi/4., 0.], color='blue'))
-    world.cars.append(car.SimpleOptimizerCar(dyn, [-0.20, 2, math.pi/4., 0.], color='blue'))
+    world.cars.append(car.SimpleOptimizerCar(dyn, [-0.20, 1, math.pi/4., 0.], color='blue'))
 
     # default_u for the cars
     world.cars[0].default_u = np.asarray([0., 1.])
