@@ -322,7 +322,7 @@ def kex_plot_1():
 
 
     data = datasets['world_kex'][0]
-    
+
 
     # Specifies the position, name and labels of the first graph
     # Speed Graph
@@ -375,10 +375,10 @@ def kex_plot_1():
     follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Follower')
     leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Leader')
     matplotlib.pyplot.legend(handles=[follow_match, leader_match])
-    
+        
 
     
-    savefig('plots/world02.pdf', transparent=True)
+    savefig('plots/world_switching_leader.pdf', transparent=True)
 
     
     exit()
