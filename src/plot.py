@@ -28,7 +28,8 @@ def ls(pattern):
     output = subprocess.check_output("ls {}".format(pattern), shell=True).splitlines()
     return output
 
-def load(filename):
+
+def load(filename, human_is_first=True):
     # load a saved .pickle file
     with open(filename) as f:
         ret = pickle.load(f)
@@ -39,8 +40,14 @@ def load(filename):
     # uh, xh = human
     # uo, xo = obstacle (not used)
 
-    uh, ur, uo = u
-    xh, xr, xo = x
+    #human_is_first = True # do this if human is a follower
+    if(human_is_first):
+        uh, ur, uo = u
+        xh, xr, xo = x
+    else:
+        ur, uh, uo = u
+        xr, xh, xo = x
+        
     t = arange(len(xh))*dt
     if filename.split('/')[0] in ['data', 'unique_data']:
         user = '0'
@@ -92,7 +99,7 @@ def cextend(a, w):
     return concatenate([a, asarray([a[-1]]*(w-len(a)))])
 
 #worlds = ['world{}'.format(i) for i in range(6)] + ['test']
-worlds = ['world_kex']
+"""worlds = ['world_kex']
 datasets = {}
 for w in worlds:
     #print(ls("saved_data/*/{}*".format(w)))
@@ -104,13 +111,14 @@ for w, dataset in datasets.items():
     print '{}: {} samples'.format(w, len(dataset))
 
 print '-'*20
-
+"""
 
 
 
 def plotAnimate():
     T = 30
-    opt = load('data/world4-opt.pickle')
+    #opt = load('data/world4-opt.pickle')
+    opt = load('data/world_kex_swithing_leader.pickle')
     def setup():
         figure(figsize=(5, 5))
         gca().spines['right'].set_visible(False)
@@ -140,7 +148,7 @@ def plotAnimate():
         if frame<0:
             return
         frame = min(frame, len(opt['xr']))
-        plot(opt['xr'][:frame, 0], opt['xh'][:frame, 1], color=PURPLE, linewidth=3)
+        plot(opt['xr'][:frame, 0], opt['xh'][:frame, 1], color=LIGHT_BLUE, linewidth=3)
         return frame == len(opt['xr'])
     f = [0, 0, 0]
     ind = 0
@@ -148,14 +156,15 @@ def plotAnimate():
         setup()
         r = [False, False, False]
         r[0] = anim_purp(f[0])
-        r[1] = animate(f[1], 'world4', DARK_ORANGE, LIGHT_ORANGE)
-        r[2] = animate(f[2], 'world5', DARK_GRAY, LIGHT_GRAY)
+        r[1] = animate(f[1], 'world_kex', DARK_ORANGE, LIGHT_ORANGE)
+        r[2] = animate(f[2], 'world_kex', DARK_GRAY, LIGHT_GRAY)
         if r[ind]:
             ind += 1
         savefig('images/plot-{:04d}.png'.format(sum(f)), transparent=True)
         if ind==len(f):
             break
         f[ind] += 1
+
 
 def plot45():
     T = 30
@@ -290,105 +299,6 @@ def plot23():
     figlegend((plots['opt'], plots['world0'], plots['world2'], plots['world3']), ('Learned Human Model', 'Avoid Human', 'Affect Human (Left)', 'Affect Human (Right)'), 'upper center', ncol=4, fontsize=10)
     savefig('plots/plot23.pdf')
 
-
-def kex_plot_1():
-    T = dt*35
-    def setup(flag1=True, flag2=True):
-        # fix the axis
-        gca().spines['right'].set_visible(flag2)
-        gca().spines['top'].set_visible(flag2)
-        gca().spines['left'].set_visible(flag1)
-        gca().spines['bottom'].set_visible(flag1)
-        gca().xaxis.set_ticks_position('bottom')
-        gca().yaxis.set_ticks_position('left')
-
-        if not flag1 and not flag2:
-            tick_params(
-                axis='x',
-                which='both',      # both major and minor ticks are affected
-                bottom='off',      # ticks along the bottom edge are off
-                top='off',         # ticks along the top edge are off
-                labelbottom='off')
-            tick_params(
-                axis='y',
-                which='both',      # both major and minor ticks are affected
-                bottom='off',      # ticks along the bottom edge are off
-                top='off',         # ticks along the top edge are off
-                labelbottom='off')
-            gca().get_xaxis().set_ticks([])
-            gca().get_yaxis().set_ticks([])
-        xlim(0., T)
-    opt = load('saved_data/world_kex.pickle')
-
-
-    data = datasets['world_kex'][0]
-
-
-    # Specifies the position, name and labels of the first graph
-    # Speed Graph
-    figure(figsize=(9, 7))
-    subplot(2, 2, 1)
-    ylabel('Speed')
-    xlabel('(a)')
-    setup()
-    s1 = plot(data['t'], data['xh'][:, 3], color=LIGHT_BLUE, linewidth=1.)
-    s2 = plot(data['t'], data['xr'][:, 3], color=LIGHT_ORANGE, linewidth=1.)
-    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Follower')
-    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Leader')
-    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
-    
-    # Graph for the x-pos
-    subplot(2, 2, 2)
-    setup()
-    ylabel('X Position')
-    xlabel('(b)')
-    ylim(0., 3.)
-    x1 = plot(data['t'], data['xh'][:, 1], color=LIGHT_BLUE, linewidth=1.)
-    x2 = plot(data['t'], data['xr'][:, 1], color=LIGHT_ORANGE, linewidth=1.)
-    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Follower')
-    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Leader')
-    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
-
-    # Graph for the acceleration
-    subplot(2, 2, 3)
-    setup()
-    ylabel('Acceleration')
-    xlabel('(c)')
-    ylim(0., 3.)
-    a1 = plot(data['t'], data['xh'][:, 2], color=LIGHT_BLUE, linewidth=1.)
-    a2 = plot(data['t'], data['xr'][:, 2], color=LIGHT_ORANGE, linewidth=1.)
-    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Follower')
-    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Leader')
-    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
-    
-    
-    # Graph for the y-pos
-    subplot(2, 2, 4)
-    setup()
-    ylabel('Y Position')
-    xlabel('(d)')
-    ylim(-.5, .5)
-    y1 = plot(data['t'], data['xh'][:, 0], color=LIGHT_BLUE, linewidth=1.)
-    y2 = plot(data['t'], data['xr'][:, 0], color=LIGHT_ORANGE, linewidth=1.)
-    
-
-    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Follower')
-    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Leader')
-    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
-        
-
-    
-    savefig('plots/world_switching_leader.pdf', transparent=True)
-
-    
-    exit()
-
-    for w, color in [('world_kex', LIGHT_ORANGE), ('world_kex', LIGHT_BLUE)]:
-        dataset = datasets[w]
-        for data in dataset[::2]:
-            plot(data['t'], data['xh'][:, 3], color=color, linewidth=0.7)
-    plot(opt['t'], opt['xh'][:, 3], color=PURPLE, linewidth=1.)
-    savefig('plots/world01.pdf', transparent=True)
 
 
 
@@ -561,6 +471,137 @@ def plotNumbers():
     print 'Optimum (Purple)', measure3(load('data/world4-opt.pickle'))
 
 
+def kex_plot_1(name = "", human_is_first=True):
+    T = dt*35
+    def setup(flag1=True, flag2=True):
+        # fix the axis
+        gca().spines['right'].set_visible(flag2)
+        gca().spines['top'].set_visible(flag2)
+        gca().spines['left'].set_visible(flag1)
+        gca().spines['bottom'].set_visible(flag1)
+        gca().xaxis.set_ticks_position('bottom')
+        gca().yaxis.set_ticks_position('left')
+
+        if not flag1 and not flag2:
+            tick_params(
+                axis='x',
+                which='both',      # both major and minor ticks are affected
+                bottom='off',      # ticks along the bottom edge are off
+                top='off',         # ticks along the top edge are off
+                labelbottom='off')
+            tick_params(
+                axis='y',
+                which='both',      # both major and minor ticks are affected
+                bottom='off',      # ticks along the bottom edge are off
+                top='off',         # ticks along the top edge are off
+                labelbottom='off')
+            gca().get_xaxis().set_ticks([])
+            gca().get_yaxis().set_ticks([])
+        xlim(0., T)
+    #opt = load('saved_data/world_kex.pickle')
+
+
+    #data = datasets['world_kex'][0]
+    data = 0
+    opt = 0
+    datasets = 0
+
+
+    opt = load('data/'+name+'.pickle', human_is_first)
+    #print opt
+    #exit()
+    #print datasets
+    #exit()
+    data = opt
+
+    # Specifies the position, name and labels of the first graph
+    # Speed Graph
+    figure(figsize=(9, 7))
+    subplot(2, 2, 1)
+    ylabel('Speed [m/s]')
+    xlabel('Time [s]   (a)')
+    setup()
+    ylim(0., 10.)
+    xlim(0., 3.)
+    sp1 = data['xh']
+    sp2 = data['xr']
+    for i in range(len(sp1)):
+        sp1[i] = sp1[i]/0.13
+        sp2[i] = sp2[i]/0.13
+
+    s1 = plot(data['t'], data['xh'][:, 3], color=LIGHT_BLUE, linewidth=1.)
+    s2 = plot(data['t'], data['xr'][:, 3], color=LIGHT_ORANGE, linewidth=1.)
+    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Human')
+    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Robot')
+    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
+    
+    # Graph for the x-pos
+    subplot(2, 2, 2)
+    setup()
+    ylabel('X Position [m]')
+    xlabel('Time [s]   (b)')
+    ylim(0., 25.)
+    xlim(0., 3.)
+    x1 = plot(data['t'], data['xh'][:, 1], color=LIGHT_BLUE, linewidth=1.)
+    x2 = plot(data['t'], data['xr'][:, 1], color=LIGHT_ORANGE, linewidth=1.)
+    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Human')
+    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Robot')
+    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
+
+    # Graph for the acceleration
+    subplot(2, 2, 3)
+    setup()
+    ylabel('Acceleration [m/s^2]')
+    xlabel('Time [s]   (c)')
+    ylim(-20., 20.)
+    xlim(0., 3.)
+    speed_human = data['xh'][:, 3]
+    speed_robot = data['xr'][:, 3]
+    accel_human = [0.0]
+    accel_robot = [0.0]
+    # we take the speeds and 
+    #print speed_human
+    #exit()
+    for i in range(1, len(speed_human)):
+        accel_human.append((speed_human[i]-speed_human[i-1])*10)
+        accel_robot.append((speed_robot[i]-speed_robot[i-1])*10)
+        #print speed_human[i]
+        #print accel_human[i]
+    #print speed_human
+
+    a1 = plot(data['t'], accel_human, color=LIGHT_BLUE, linewidth=1.)
+    a2 = plot(data['t'], accel_robot, color=LIGHT_ORANGE, linewidth=1.)
+    
+    #a1 = plot(data['t'], data['xh'][:, 2], color=LIGHT_BLUE, linewidth=1.)
+    #a2 = plot(data['t'], data['xr'][:, 2], color=LIGHT_ORANGE, linewidth=1.)
+    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Human')
+    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Robot')
+    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
+    
+    
+    # Graph for the y-pos
+    subplot(2, 2, 4)
+    setup()
+    ylabel('Y Position [m]')
+    xlabel('Time [s]   (d)')
+    ylim(-2., 2.)
+    xlim(0., 3.)
+    y1 = plot(data['t'], data['xh'][:, 0], color=LIGHT_BLUE, linewidth=1.)
+    y2 = plot(data['t'], data['xr'][:, 0], color=LIGHT_ORANGE, linewidth=1.)
+    follow_match = matplotlib.patches.Patch(color=LIGHT_BLUE, label='Human')
+    leader_match = matplotlib.patches.Patch(color=LIGHT_ORANGE, label='Robot')
+    matplotlib.pyplot.legend(handles=[follow_match, leader_match])
+        
+
+    
+    #savefig('plots/world_behind_human_follower.pdf', transparent=True)
+    #savefig('plots/world_behind_human_leader.pdf', transparent=True)
+    #savefig('plots/world_infront_human_follower.pdf', transparent=True)
+    #savefig('plots/world_infront_human_leader.pdf', transparent=True)
+    #savefig('plots/world_switch_human_follower.pdf', transparent=True)
+    #savefig('plots/world_switch_human_leader.pdf', transparent=True)
+    savefig('plots/'+name+'.pdf', transparent=True)
+    
 #plotAnimate()
 
 #plotNumbers()
@@ -568,4 +609,26 @@ def plotNumbers():
 #plot01()
 #plot23()
 #plot45()
-kex_plot_1()
+
+
+#kex_plot_1()
+
+names = ['world_behind_human_follower',
+'world_behind_human_leader',
+'world_infront_human_follower',
+'world_infront_human_leader',
+'world_switch_human_follower',
+'world_switch_human_leader']
+
+human_is_first =[True, False, True, False, True, False]
+
+load_location = 'data'
+load_format = '.pickle'
+
+save_location = 'plots'
+save_format = '.pdf'
+
+for i in range(len(names)):
+    print "Fixing graph: ", names[i]
+    kex_plot_1(names[i], human_is_first[i])
+
