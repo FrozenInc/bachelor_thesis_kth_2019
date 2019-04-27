@@ -472,6 +472,15 @@ def plotNumbers():
 
 
 def kex_plot_1(name = "", human_is_first=True):
+    # black and white, works
+    #COLOR1 = (0.8, 0.8, 0.8)
+    #COLOR2 = (0., 0., 0.)
+
+    COLOR_ROBOT = (0.  , 0.23, 0.68)  # Ataneo blue
+    COLOR_HUMAN = (0.29, 1.00, 0.00)  # Chlorophyll green
+    LIGHT_BLUE = COLOR_HUMAN
+    LIGHT_ORANGE = COLOR_ROBOT
+    
     T = dt*35
     def setup(flag1=True, flag2=True):
         # fix the axis
