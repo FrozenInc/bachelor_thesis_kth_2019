@@ -81,7 +81,7 @@ class Visualizer(object):
             sprite.scale = scale
             return sprite
         # alla bil sprites
-        self.sprites = {c: car_sprite(c) for c in ['red', 'yellow', 'purple', 'white', 'orange', 'gray', 'blue']}
+        self.sprites = {c: car_sprite(c) for c in ['red', 'yellow', 'purple', 'white', 'orange', 'gray', 'blue', 'blue-dark', 'green']}
         # ala objekt sprites
         self.obj_sprites = {c: object_sprite(c) for c in ['cone', 'firetruck']}
     # skapar var varlden har i sig, bilar, lanes och objekt 
@@ -158,6 +158,8 @@ class Visualizer(object):
         self.prev_t = time.time()
     # centrerar kameran?
     def center(self):
+        return np.asarray([0., 0.7])
+
         if self.main_car is None:
             return np.asarray([0., 0.])
         elif self.camera_center is not None:
@@ -286,24 +288,27 @@ class Visualizer(object):
         for car in self.cars:
             if car!=self.main_car and car not in self.visible_cars:
                 self.draw_car(self.anim_x[car], car.color)
-                for temp in range(len(car.traj.x)):
-                    point = car.traj.x[temp].eval()
-                    self.draw_car(point, car.color)
+                # FUTURE TRAJ
+                #for temp in range(len(car.traj.x)):
+                #    point = car.traj.x[temp].eval()
+                #    self.draw_car(point, car.color)
         if self.heat is not None:
             self.draw_heatmap()
         for car in self.cars:
             if car==self.main_car or car in self.visible_cars:
                 self.draw_car(self.anim_x[car], car.color)
-                for temp in range(len(car.traj.x)):
-                    point = car.traj.x[temp].eval()
-                    self.draw_car(point, car.color)
+                # FUTURE TRAJ
+                #for temp in range(len(car.traj.x)):
+                #    point = car.traj.x[temp].eval()
+                #    self.draw_car(point, car.color)
 
         gl.glPopMatrix()
         if isinstance(self.main_car, Car):
             self.label.text = 'Speed follower: %.2f'%self.anim_x[self.main_car][3]
             self.label2.text = 'Speed leader: %.2f'%self.anim_x[self.cars[1]][3]
-            self.label.draw()
-            self.label2.draw()
+            # LABELS
+            #self.label.draw()
+            #self.label2.draw()
         if self.output is not None:
             pyglet.image.get_buffer_manager().get_color_buffer().save(self.output.format(self.frame))
 

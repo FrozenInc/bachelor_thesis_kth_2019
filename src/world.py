@@ -91,10 +91,10 @@ def world_kex(know_model = True):
     # to get the distance take the pos/0.13 to get it to irl meters
 
 
-    left_is_follower = True
+    left_is_follower = False
 
-    #pos = 0.14
-    pos=0.0
+    pos = 0.04
+    #pos=0.0
 
     T_steps = 3
     speed = 0.80
@@ -111,19 +111,31 @@ def world_kex(know_model = True):
     #pos = 0.10 #WORKS
     #speed = 0.80
 
+    # Demonstration
+    left_color = "green"
+    right_color = "blue-dark"
+    
+    # Real
+    #follower_color = "yellow"
+    #leader_color = "red"
 
     # Follower must alwasy be created first, otherwise it won't move
     if left_is_follower:
-        world.cars.append(car.NestedOptimizerCarFollower2(dyn, [-0.13, pos, math.pi/2., speed], color='yellow', T=T_steps))
+        world.cars.append(car.NestedOptimizerCarFollower2(dyn, [-0.13, pos, math.pi/2., speed], color=left_color, T=T_steps))
 
-        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.0, 0.0, math.pi/2., speed], color='red', T=T_steps))
+        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.0, 0.0, math.pi/2., speed], color=right_color, T=T_steps))
     else:
-        world.cars.append(car.NestedOptimizerCarFollower2(dyn, [-0.0, 0.0, math.pi/2., speed], color='yellow', T=T_steps))
+        world.cars.append(car.NestedOptimizerCarFollower2(dyn, [-0.0, 0.0, math.pi/2., speed], color=right_color, T=T_steps))
 
-        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, pos, math.pi/2., speed], color='red', T=T_steps))
+        world.cars.append(car.NestedOptimizerCarLeader(dyn, [-0.13, pos, math.pi/2., speed], color=left_color, T=T_steps))
 
     #world.cars.append(car.SimpleOptimizerCar(dyn, [-0.13, 2, math.pi/4., 0.], color='blue'))
-    world.cars.append(car.SimpleOptimizerCar(dyn, [-0.20, 1, math.pi/4., 0.], color='blue'))
+   
+    # THE OBSTACLE IT WORKS WITH
+    #world.cars.append(car.SimpleOptimizerCar(dyn, [-0.20, 1, math.pi/4., 0.], color='blue'))
+
+    # THE OBSTACLE FOR DEMONSTRATIONS
+    world.cars.append(car.SimpleOptimizerCar(dyn, [-0.20, 0.7, math.pi/4., 0.], color='gray'))
 
     # default_u for the cars
     world.cars[0].default_u = np.asarray([0., 1.])
