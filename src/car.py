@@ -99,7 +99,7 @@ class SimpleOptimizerCar(Car): # expanderar Car klassen
     def control(self, steer, gas):
         print len(self.cache) # VIKTIGT: printar ut vilken tidsteg ar nu
         self.cache.append(None)
-        if len(self.cache) >= 40:
+        if len(self.cache) >= 30:
             print "Exiting"
             exit()
         if self.movable == False:

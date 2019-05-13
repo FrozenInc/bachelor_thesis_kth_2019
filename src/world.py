@@ -92,9 +92,11 @@ def world_kex(know_model = True):
 
 
     left_is_follower = False
+    pos = 0.15
 
-    pos = 0.04
+    #pos = 0.15
     #pos=0.0
+
 
     T_steps = 3
     speed = 0.80

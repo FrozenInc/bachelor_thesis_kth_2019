@@ -156,6 +156,11 @@ class Visualizer(object):
         for car, hist in zip(self.cars, self.history_x):
             hist.append(car.x)
         self.prev_t = time.time()
+
+        # use this to get all pictures
+        pyglet.image.get_buffer_manager().get_color_buffer().save('screenshots/screenshot-%.2f.png'%time.time())
+
+
     # centrerar kameran?
     def center(self):
         return np.asarray([0., 0.7])
